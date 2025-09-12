@@ -76,7 +76,7 @@ public class AuthService {
                 request.getEmail(), 
                 OtpService.Purpose.REGISTRATION
             );
-
+            System.out.println("Generated OTP: " + otpCode); // For debugging, remove in production 
             // Create role-specific profile
             createRoleSpecificProfile(savedUser, request);
 
@@ -113,6 +113,7 @@ public class AuthService {
                 user.getEmail(), 
                 OtpService.Purpose.LOGIN_VERIFICATION
             );
+            System.out.println("Generated OTP for login: " + otpCode); // For debugging, remove in production
             
             emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
             
@@ -206,7 +207,7 @@ public class AuthService {
                 email, 
                 OtpService.Purpose.REGISTRATION
             );
-
+            System.out.println("Generated OTP: " + otpCode); // For debugging, remove in production
             // Send OTP email
             emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
 
