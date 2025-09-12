@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface VeterinarianProfileRepository extends JpaRepository<VeterinarianProfile, Long> {
+public interface AuthVeterinarianProfileRepository extends JpaRepository<VeterinarianProfile, Long> {
     
     Optional<VeterinarianProfile> findByUser(User user);
     

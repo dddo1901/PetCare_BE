@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Entity(name = "PetOwnerPet")
 @Table(name = "pets")
 @Data
 @NoArgsConstructor

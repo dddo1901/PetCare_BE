@@ -78,7 +78,7 @@ public interface VetMedicalRecordRepository extends JpaRepository<VetMedicalReco
     
     // Find records with specific test results
     @Query("SELECT mr FROM VetMedicalRecord mr WHERE " +
-           "JSON_CONTAINS(mr.testResults, JSON_OBJECT('testName', :testName))")
+           "LOWER(mr.testResultsJson) LIKE LOWER(CONCAT('%', :testName, '%'))")
     List<VetMedicalRecord> findByTestResultsContaining(@Param("testName") String testName);
     
     // Find records by medication

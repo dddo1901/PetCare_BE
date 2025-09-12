@@ -25,7 +25,7 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findByOwnerIdAndTypeOrderByCreatedAtDesc(Long ownerId, String type);
     
     // Search pets by owner with name or breed
-    @Query("SELECT p FROM Pet p WHERE p.ownerId = :ownerId AND " +
+    @Query("SELECT p FROM PetOwnerPet p WHERE p.ownerId = :ownerId AND " +
            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(p.breed) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
            "ORDER BY p.createdAt DESC")
@@ -35,12 +35,12 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findByOwnerIdAndHealthStatusOrderByCreatedAtDesc(Long ownerId, String healthStatus);
     
     // Find pets needing vaccination
-    @Query("SELECT p FROM Pet p WHERE p.ownerId = :ownerId AND p.nextVaccination <= :date " +
+    @Query("SELECT p FROM PetOwnerPet p WHERE p.ownerId = :ownerId AND p.nextVaccination <= :date " +
            "ORDER BY p.nextVaccination ASC")
     List<Pet> findPetsNeedingVaccination(@Param("ownerId") Long ownerId, @Param("date") LocalDate date);
     
     // Find pets needing checkup (last checkup > 6 months ago)
-    @Query("SELECT p FROM Pet p WHERE p.ownerId = :ownerId AND " +
+    @Query("SELECT p FROM PetOwnerPet p WHERE p.ownerId = :ownerId AND " +
            "(p.lastCheckup IS NULL OR p.lastCheckup < :sixMonthsAgo) " +
            "ORDER BY p.lastCheckup ASC")
     List<Pet> findPetsNeedingCheckup(@Param("ownerId") Long ownerId, @Param("sixMonthsAgo") LocalDate sixMonthsAgo);

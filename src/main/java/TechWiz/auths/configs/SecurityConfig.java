@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()  // For health checks
-                .anyRequest().authenticated()
+                .anyRequest().authenticated() // Yêu cầu authentication cho tất cả requests khác
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers

@@ -18,17 +18,17 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
 import TechWiz.shelter.models.Pet;
-import TechWiz.shelter.services.PetService;
+import TechWiz.shelter.services.ShelterPetService;
 import TechWiz.shelter.dto.*;
 
 @RestController
 @RequestMapping("/api/shelter")
 @Validated
 @CrossOrigin(origins = "*")
-public class PetController {
+public class ShelterPetController {
     
     @Autowired
-    private PetService petService;
+    private ShelterPetService petService;
     
     @PostMapping("/{shelterId}/pets")
     public ResponseEntity<?> createPet(@PathVariable @Positive Long shelterId,

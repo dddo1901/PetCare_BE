@@ -19,7 +19,7 @@ public class ProfileService {
     private PetOwnerProfileRepository petOwnerProfileRepository;
 
     @Autowired
-    private VeterinarianProfileRepository veterinarianProfileRepository;
+    private AuthVeterinarianProfileRepository veterinarianProfileRepository;
 
     @Autowired
     private ShelterProfileRepository shelterProfileRepository;

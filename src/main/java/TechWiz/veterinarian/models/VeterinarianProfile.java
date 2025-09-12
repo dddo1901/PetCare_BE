@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Entity(name = "VetVeterinarianProfile")
 @Table(name = "veterinarian_profiles")
 @Data
 @NoArgsConstructor
@@ -87,11 +87,13 @@ public class VeterinarianProfile {
     private LocalDateTime updatedAt;
     
     // Relationships
-    @OneToMany(mappedBy = "veterinarian", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "veterinarian_id")
     @JsonManagedReference
     private List<VetAppointment> appointments;
     
-    @OneToMany(mappedBy = "veterinarian", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "veterinarian_id")
     @JsonManagedReference
     private List<VetMedicalRecord> medicalRecords;
     

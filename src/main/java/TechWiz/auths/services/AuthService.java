@@ -22,7 +22,7 @@ import TechWiz.auths.models.dto.VerifyOtpRequest;
 import TechWiz.auths.repositories.PetOwnerProfileRepository;
 import TechWiz.auths.repositories.ShelterProfileRepository;
 import TechWiz.auths.repositories.UserRepository;
-import TechWiz.auths.repositories.VeterinarianProfileRepository;
+import TechWiz.auths.repositories.AuthVeterinarianProfileRepository;
 
 @Service
 @Transactional
@@ -35,7 +35,7 @@ public class AuthService {
     private PetOwnerProfileRepository petOwnerProfileRepository;
 
     @Autowired
-    private VeterinarianProfileRepository veterinarianProfileRepository;
+    private AuthVeterinarianProfileRepository veterinarianProfileRepository;
 
     @Autowired
     private ShelterProfileRepository shelterProfileRepository;

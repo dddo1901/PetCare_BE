@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import TechWiz.shelter.models.CareLog;
 import TechWiz.shelter.models.Pet;
 import TechWiz.shelter.repositories.CareLogRepository;
-import TechWiz.shelter.repositories.PetRepository;
+import TechWiz.shelter.repositories.ShelterPetRepository;
 import TechWiz.shelter.dto.*;
 
 @Service
@@ -25,10 +25,10 @@ public class CareLogService {
     private CareLogRepository careLogRepository;
     
     @Autowired
-    private PetRepository petRepository;
+    private ShelterPetRepository petRepository;
     
     @Autowired
-    private PetService petService;
+    private ShelterPetService petService;
     
     public CareLogResponseDto createCareLog(Long shelterId, CareLogRequestDto requestDto) {
         Pet pet = petRepository.findById(requestDto.getPetId())

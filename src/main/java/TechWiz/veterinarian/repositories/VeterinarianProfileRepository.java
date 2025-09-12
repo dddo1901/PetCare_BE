@@ -23,8 +23,8 @@ public interface VeterinarianProfileRepository extends JpaRepository<Veterinaria
     List<VeterinarianProfile> findByIsAvailableTrueAndIsVerifiedTrue();
     
     // Find by specialties (using JSON search)
-    @Query("SELECT v FROM VeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
-           "JSON_CONTAINS(v.specialties, JSON_QUOTE(:specialty))")
+    @Query("SELECT v FROM VetVeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
+           "LOWER(v.specialties) LIKE LOWER(CONCAT('%', :specialty, '%'))")
     List<VeterinarianProfile> findBySpecialty(@Param("specialty") String specialty);
     
     // Find by clinic
@@ -34,7 +34,7 @@ public interface VeterinarianProfileRepository extends JpaRepository<Veterinaria
     List<VeterinarianProfile> findByIsAvailableTrueAndIsVerifiedTrueOrderByRatingDescTotalReviewsDesc();
     
     // Search veterinarians by name, clinic, or specialty
-    @Query("SELECT v FROM VeterinarianProfile v JOIN v.user u WHERE " +
+    @Query("SELECT v FROM VetVeterinarianProfile v JOIN v.user u WHERE " +
            "v.isAvailable = true AND v.isVerified = true AND " +
            "(LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(v.clinic) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -42,13 +42,13 @@ public interface VeterinarianProfileRepository extends JpaRepository<Veterinaria
     List<VeterinarianProfile> searchVeterinarians(@Param("keyword") String keyword);
     
     // Get veterinarians by rating range
-    @Query("SELECT v FROM VeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
+    @Query("SELECT v FROM VetVeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
            "v.rating >= :minRating AND v.totalReviews >= :minReviews " +
            "ORDER BY v.rating DESC, v.totalReviews DESC")
     List<VeterinarianProfile> findByRatingRange(@Param("minRating") Double minRating, @Param("minReviews") Integer minReviews);
     
     // Get veterinarians with consultation fee range
-    @Query("SELECT v FROM VeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
+    @Query("SELECT v FROM VetVeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
            "v.consultationFee BETWEEN :minFee AND :maxFee " +
            "ORDER BY v.consultationFee ASC")
     List<VeterinarianProfile> findByConsultationFeeRange(@Param("minFee") Double minFee, @Param("maxFee") Double maxFee);
@@ -63,7 +63,7 @@ public interface VeterinarianProfileRepository extends JpaRepository<Veterinaria
     boolean existsByLicenseNumber(String licenseNumber);
     
     // Find veterinarians by years of experience
-    @Query("SELECT v FROM VeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
+    @Query("SELECT v FROM VetVeterinarianProfile v WHERE v.isAvailable = true AND v.isVerified = true AND " +
            "v.yearsExperience >= :minYears ORDER BY v.yearsExperience DESC")
     List<VeterinarianProfile> findByMinYearsExperience(@Param("minYears") Integer minYears);
 }

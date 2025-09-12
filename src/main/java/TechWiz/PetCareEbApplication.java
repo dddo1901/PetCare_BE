@@ -4,7 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {}, 
+    scanBasePackages = {"TechWiz.auths", "TechWiz.petOwner", "TechWiz.shelter", "TechWiz.veterinarian"})
 @EnableJpaRepositories
 public class PetCareEbApplication {
 

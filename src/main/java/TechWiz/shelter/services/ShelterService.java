@@ -15,7 +15,7 @@ import TechWiz.shelter.models.Shelter;
 import TechWiz.shelter.models.Pet;
 import TechWiz.shelter.models.AdoptionInquiry;
 import TechWiz.shelter.repositories.ShelterRepository;
-import TechWiz.shelter.repositories.PetRepository;
+import TechWiz.shelter.repositories.ShelterPetRepository;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.dto.*;
 
@@ -27,7 +27,7 @@ public class ShelterService {
     private ShelterRepository shelterRepository;
     
     @Autowired
-    private PetRepository petRepository;
+    private ShelterPetRepository petRepository;
     
     @Autowired
     private AdoptionInquiryRepository adoptionInquiryRepository;

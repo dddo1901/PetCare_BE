@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@Entity
-@Table(name = "veterinarian_profiles")
+@Entity(name = "AuthVeterinarianProfile")
+@Table(name = "auth_veterinarian_profiles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

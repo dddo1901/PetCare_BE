@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "pets")
+@Entity(name = "ShelterPet")
+@Table(name = "shelter_pets")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

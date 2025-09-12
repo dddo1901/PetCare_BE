@@ -14,17 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import TechWiz.shelter.models.Pet;
 import TechWiz.shelter.models.Shelter;
 import TechWiz.shelter.models.AdoptionInquiry;
-import TechWiz.shelter.repositories.PetRepository;
+import TechWiz.shelter.repositories.ShelterPetRepository;
 import TechWiz.shelter.repositories.ShelterRepository;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.dto.*;
 
 @Service
 @Transactional
-public class PetService {
+public class ShelterPetService {
     
     @Autowired
-    private PetRepository petRepository;
+    private ShelterPetRepository petRepository;
     
     @Autowired
     private ShelterRepository shelterRepository;
