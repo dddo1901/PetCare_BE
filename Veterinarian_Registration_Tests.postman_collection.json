@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "vet-registration-tests",
+		"name": "Veterinarian Registration API Tests",
+		"description": "Collection for testing veterinarian registration API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Successful Registration - Complete Data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('status');",
+							"    pm.expect(responseJson).to.have.property('message');",
+							"});",
+							"",
+							"pm.test(\"Registration successful\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.status === 'success') {",
+							"        pm.expect(responseJson.data).to.have.property('userId');",
+							"        pm.expect(responseJson.data).to.have.property('email');",
+							"        pm.expect(responseJson.data.role).to.equal('VETERINARIAN');",
+							"        pm.expect(responseJson.data.isVerified).to.equal(false);",
+							"        ",
+							"        // Store userId for future tests",
+							"        pm.environment.set('veterinarianUserId', responseJson.data.userId);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"dr.nguyen@vetclinic.com\",\n    \"password\": \"SecurePassword123!\",\n    \"fullName\": \"Dr. Nguyen Van An\",\n    \"phoneNumber\": \"0123456789\",\n    \"role\": \"VETERINARIAN\",\n    \"address\": \"123 Nguyen Trai, District 1, Ho Chi Minh City\",\n    \"profileImageUrl\": \"https://example.com/images/dr-nguyen.jpg\",\n    \"bio\": \"Experienced veterinarian specializing in small animals and emergency care\",\n    \"licenseNumber\": \"VET2024001\",\n    \"experienceYears\": 8,\n    \"specializations\": [\n        \"Small Animal Medicine\",\n        \"Emergency Care\",\n        \"Surgery\"\n    ],\n    \"clinicName\": \"An Vet Clinic\",\n    \"clinicAddress\": \"456 Le Van Sy, District 3, Ho Chi Minh City\",\n    \"availableFromTime\": \"08:00:00\",\n    \"availableToTime\": \"18:00:00\",\n    \"availableDays\": [\n        \"MONDAY\",\n        \"TUESDAY\",\n        \"WEDNESDAY\",\n        \"THURSDAY\",\n        \"FRIDAY\"\n    ],\n    \"consultationFee\": 200000.0,\n    \"isAvailableForEmergency\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Successful Registration - Minimum Data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Registration successful with minimum data\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.status).to.equal('success');",
+							"    pm.expect(responseJson.data.role).to.equal('VETERINARIAN');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"dr.tran@email.com\",\n    \"password\": \"Password123!\",\n    \"fullName\": \"Dr. Tran Thi Bich\",\n    \"phoneNumber\": \"0987654321\",\n    \"role\": \"VETERINARIAN\",\n    \"address\": \"789 Truong Chinh, Tan Binh District, Ho Chi Minh City\",\n    \"licenseNumber\": \"VET2024002\",\n    \"experienceYears\": 3,\n    \"specializations\": [\"General Practice\"],\n    \"clinicName\": \"Bich Pet Clinic\",\n    \"clinicAddress\": \"101 Pham Van Dong, Thu Duc City\",\n    \"consultationFee\": 150000.0\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Error - Email Already Exists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Email already exists error\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.status).to.equal('error');",
+							"    pm.expect(responseJson.message).to.include('already exists');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"dr.nguyen@vetclinic.com\",\n    \"password\": \"AnotherPassword123!\",\n    \"fullName\": \"Dr. Le Van Cuong\",\n    \"phoneNumber\": \"0911223344\",\n    \"role\": \"VETERINARIAN\",\n    \"address\": \"555 Vo Van Tan, District 3, Ho Chi Minh City\",\n    \"licenseNumber\": \"VET2024003\",\n    \"experienceYears\": 5,\n    \"specializations\": [\"Dermatology\"],\n    \"clinicName\": \"Cuong Vet Center\",\n    \"clinicAddress\": \"666 Cach Mang Thang 8, District 10\",\n    \"consultationFee\": 180000.0\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Error - Missing License Number",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Missing license number error\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.status).to.equal('error');",
+							"    pm.expect(responseJson.message).to.include('license number');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"dr.invalid@email.com\",\n    \"password\": \"Password123!\",\n    \"fullName\": \"Dr. Invalid Test\",\n    \"phoneNumber\": \"0123456789\",\n    \"role\": \"VETERINARIAN\",\n    \"address\": \"123 Test Street\",\n    \"experienceYears\": 2,\n    \"specializations\": [\"General Practice\"],\n    \"clinicName\": \"Test Clinic\",\n    \"clinicAddress\": \"456 Test Address\",\n    \"consultationFee\": 100000.0\n}"
+				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		},\n		{\n			\"name\": \"5. Error - Invalid Experience Years\",\n			\"event\": [\n				{\n					\"listen\": \"test\",\n					\"script\": {\n						\"exec\": [\n							\"pm.test(\\\"Status code is 200\\\", function () {\",\n							\"    pm.response.to.have.status(200);\",\n							\"});\",\n							\"\",\n							\"pm.test(\\\"Invalid experience years error\\\", function () {\",\n							\"    const responseJson = pm.response.json();\",\n							\"    pm.expect(responseJson.status).to.equal('error');\",\n							\"    pm.expect(responseJson.message).to.include('positive');\",\n							\"});\"\n						],\n						\"type\": \"text/javascript\"\n					}\n				}\n			],\n			\"request\": {\n				\"method\": \"POST\",\n				\"header\": [\n					{\n						\"key\": \"Content-Type\",\n						\"value\": \"application/json\"\n					}\n				],\n				\"body\": {\n					\"mode\": \"raw\",\n					\"raw\": \"{\\n    \\\"email\\\": \\\"dr.error@email.com\\\",\\n    \\\"password\\\": \\\"Password123!\\\",\\n    \\\"fullName\\\": \\\"Dr. Error Test\\\",\\n    \\\"phoneNumber\\\": \\\"0123456789\\\",\\n    \\\"role\\\": \\\"VETERINARIAN\\\",\\n    \\\"address\\\": \\\"123 Test Street\\\",\\n    \\\"licenseNumber\\\": \\\"VET2024004\\\",\\n    \\\"experienceYears\\\": -1,\\n    \\\"specializations\\\": [\\\"General Practice\\\"],\\n    \\\"clinicName\\\": \\\"Error Clinic\\\",\\n    \\\"clinicAddress\\\": \\\"456 Error Address\\\",\\n    \\\"consultationFee\\\": 100000.0\\n}\"\n				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		},\n		{\n			\"name\": \"6. Error - Invalid Email Format\",\n			\"event\": [\n				{\n					\"listen\": \"test\",\n					\"script\": {\n						\"exec\": [\n							\"pm.test(\\\"Status code is 200\\\", function () {\",\n							\"    pm.response.to.have.status(200);\",\n							\"});\",\n							\"\",\n							\"pm.test(\\\"Invalid email format error\\\", function () {\",\n							\"    const responseJson = pm.response.json();\",\n							\"    pm.expect(responseJson.status).to.equal('error');\",\n							\"    pm.expect(responseJson.message).to.include('valid');\",\n							\"});\"\n						],\n						\"type\": \"text/javascript\"\n					}\n				}\n			],\n			\"request\": {\n				\"method\": \"POST\",\n				\"header\": [\n					{\n						\"key\": \"Content-Type\",\n						\"value\": \"application/json\"\n					}\n				],\n				\"body\": {\n					\"mode\": \"raw\",\n					\"raw\": \"{\\n    \\\"email\\\": \\\"invalid-email-format\\\",\\n    \\\"password\\\": \\\"Password123!\\\",\\n    \\\"fullName\\\": \\\"Dr. Email Test\\\",\\n    \\\"phoneNumber\\\": \\\"0123456789\\\",\\n    \\\"role\\\": \\\"VETERINARIAN\\\",\\n    \\\"address\\\": \\\"123 Test Street\\\",\\n    \\\"licenseNumber\\\": \\\"VET2024005\\\",\\n    \\\"experienceYears\\\": 3,\\n    \\\"specializations\\\": [\\\"General Practice\\\"],\\n    \\\"clinicName\\\": \\\"Email Test Clinic\\\",\\n    \\\"clinicAddress\\\": \\\"456 Email Test Address\\\",\\n    \\\"consultationFee\\\": 100000.0\\n}\"\n				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		},\n		{\n			\"name\": \"7. Specialist Registration - Exotic Animals\",\n			\"event\": [\n				{\n					\"listen\": \"test\",\n					\"script\": {\n						\"exec\": [\n							\"pm.test(\\\"Status code is 200\\\", function () {\",\n							\"    pm.response.to.have.status(200);\",\n							\"});\",\n							\"\",\n							\"pm.test(\\\"Specialist registration successful\\\", function () {\",\n							\"    const responseJson = pm.response.json();\",\n							\"    pm.expect(responseJson.status).to.equal('success');\",\n							\"    pm.expect(responseJson.data.role).to.equal('VETERINARIAN');\",\n							\"});\"\n						],\n						\"type\": \"text/javascript\"\n					}\n				}\n			],\n			\"request\": {\n				\"method\": \"POST\",\n				\"header\": [\n					{\n						\"key\": \"Content-Type\",\n						\"value\": \"application/json\"\n					}\n				],\n				\"body\": {\n					\"mode\": \"raw\",\n					\"raw\": \"{\\n    \\\"email\\\": \\\"dr.specialist@vetclinic.com\\\",\\n    \\\"password\\\": \\\"SpecialPassword123!\\\",\\n    \\\"fullName\\\": \\\"Dr. Pham Van Duc\\\",\\n    \\\"phoneNumber\\\": \\\"0908123456\\\",\\n    \\\"role\\\": \\\"VETERINARIAN\\\",\\n    \\\"address\\\": \\\"321 Dien Bien Phu, District 1, Ho Chi Minh City\\\",\\n    \\\"profileImageUrl\\\": \\\"https://example.com/images/dr-duc.jpg\\\",\\n    \\\"bio\\\": \\\"Specialist in exotic animals and avian medicine with 12 years of experience\\\",\\n    \\\"licenseNumber\\\": \\\"VET2024007\\\",\\n    \\\"experienceYears\\\": 12,\\n    \\\"specializations\\\": [\\n        \\\"Exotic Animals\\\",\\n        \\\"Avian Medicine\\\",\\n        \\\"Wildlife Rehabilitation\\\",\\n        \\\"Orthopedic Surgery\\\"\\n    ],\\n    \\\"clinicName\\\": \\\"Exotic Pet Care Center\\\",\\n    \\\"clinicAddress\\\": \\\"789 Hai Ba Trung, District 1, Ho Chi Minh City\\\",\\n    \\\"availableFromTime\\\": \\\"07:00:00\\\",\\n    \\\"availableToTime\\\": \\\"20:00:00\\\",\\n    \\\"availableDays\\\": [\\n        \\\"MONDAY\\\",\\n        \\\"TUESDAY\\\",\\n        \\\"WEDNESDAY\\\",\\n        \\\"THURSDAY\\\",\\n        \\\"FRIDAY\\\",\\n        \\\"SATURDAY\\\"\\n    ],\\n    \\\"consultationFee\\\": 350000.0,\\n    \\\"isAvailableForEmergency\\\": true\\n}\"\n				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		},\n		{\n			\"name\": \"8. Random Email Test\",\n			\"event\": [\n				{\n					\"listen\": \"prerequest\",\n					\"script\": {\n						\"exec\": [\n							\"// Generate random email for testing\",\n							\"const randomId = Math.floor(Math.random() * 10000);\",\n							\"pm.environment.set(\\\"randomEmail\\\", `dr.test${randomId}@vetclinic.com`);\",\n							\"pm.environment.set(\\\"randomLicense\\\", `VET2024${randomId}`);\"\n						],\n						\"type\": \"text/javascript\"\n					}\n				},\n				{\n					\"listen\": \"test\",\n					\"script\": {\n						\"exec\": [\n							\"pm.test(\\\"Status code is 200\\\", function () {\",\n							\"    pm.response.to.have.status(200);\",\n							\"});\",\n							\"\",\n							\"pm.test(\\\"Random email registration successful\\\", function () {\",\n							\"    const responseJson = pm.response.json();\",\n							\"    pm.expect(responseJson.status).to.equal('success');\",\n							\"    pm.expect(responseJson.data.email).to.include('dr.test');\",\n							\"});\"\n						],\n						\"type\": \"text/javascript\"\n					}\n				}\n			],\n			\"request\": {\n				\"method\": \"POST\",\n				\"header\": [\n					{\n						\"key\": \"Content-Type\",\n						\"value\": \"application/json\"\n					}\n				],\n				\"body\": {\n					\"mode\": \"raw\",\n					\"raw\": \"{\\n    \\\"email\\\": \\\"{{randomEmail}}\\\",\\n    \\\"password\\\": \\\"RandomTest123!\\\",\\n    \\\"fullName\\\": \\\"Dr. Random Test\\\",\\n    \\\"phoneNumber\\\": \\\"0909876543\\\",\\n    \\\"role\\\": \\\"VETERINARIAN\\\",\\n    \\\"address\\\": \\\"Random Address, Ho Chi Minh City\\\",\\n    \\\"licenseNumber\\\": \\\"{{randomLicense}}\\\",\\n    \\\"experienceYears\\\": 5,\\n    \\\"specializations\\\": [\\\"General Practice\\\", \\\"Surgery\\\"],\\n    \\\"clinicName\\\": \\\"Random Vet Clinic\\\",\\n    \\\"clinicAddress\\\": \\\"Random Clinic Address\\\",\\n    \\\"consultationFee\\\": 180000.0\\n}\"\n				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		}\n	],\n	\"event\": [\n		{\n			\"listen\": \"prerequest\",\n			\"script\": {\n				\"type\": \"text/javascript\",\n				\"exec\": [\n					\"// Set base URL if not already set\",\n					\"if (!pm.environment.get(\\\"baseUrl\\\")) {\",\n					\"    pm.environment.set(\\\"baseUrl\\\", \\\"http://localhost:8080\\\");\",\n					\"}\"\n				]\n			}\n		},\n		{\n			\"listen\": \"test\",\n			\"script\": {\n				\"type\": \"text/javascript\",\n				\"exec\": [\n					\"// Global test to check response time\",\n					\"pm.test(\\\"Response time is less than 5000ms\\\", function () {\",\n					\"    pm.expect(pm.response.responseTime).to.be.below(5000);\",\n					\"});\",\n					\"\",\n					\"// Global test to check content type\",\n					\"pm.test(\\\"Content-Type is application/json\\\", function () {\",\n					\"    pm.expect(pm.response.headers.get(\\\"Content-Type\\\")).to.include(\\\"application/json\\\");\",\n					\"});\"\n				]\n			}\n		}\n	],\n	\"variable\": [\n		{\n			\"key\": \"baseUrl\",\n			\"value\": \"http://localhost:8080\",\n			\"type\": \"string\"\n		}\n	]\n}"
+				},\n				\"url\": {\n					\"raw\": \"{{baseUrl}}/api/auth/register\",\n					\"host\": [\n						\"{{baseUrl}}\"\n					],\n					\"path\": [\n						\"api\",\n						\"auth\",\n						\"register\"\n					]\n				}\n			},\n			\"response\": []\n		}\n	]\n}
