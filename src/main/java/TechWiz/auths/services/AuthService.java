@@ -19,10 +19,10 @@ import TechWiz.auths.models.dto.LoginRequest;
 import TechWiz.auths.models.dto.RegisterRequest;
 import TechWiz.auths.models.dto.ResetPasswordRequest;
 import TechWiz.auths.models.dto.VerifyOtpRequest;
+import TechWiz.auths.repositories.AuthVeterinarianProfileRepository;
 import TechWiz.auths.repositories.PetOwnerProfileRepository;
 import TechWiz.auths.repositories.ShelterProfileRepository;
 import TechWiz.auths.repositories.UserRepository;
-import TechWiz.auths.repositories.AuthVeterinarianProfileRepository;
 
 @Service
 @Transactional
@@ -280,15 +280,15 @@ public class AuthService {
     private void createRoleSpecificProfile(User user, RegisterRequest request) {
         switch (user.getRole()) {
             case PET_OWNER:
-                createPetOwnerProfile(user, request);
+                createPetOwnerProfile(user);
                 break;
 
             case VETERINARIAN:
-                createVeterinarianProfile(user, request);
+                createVeterinarianProfile(user);
                 break;
 
             case SHELTER:
-                createShelterProfile(user, request);
+                createShelterProfile(user);
                 break;
 
             case ADMIN:
@@ -297,67 +297,59 @@ public class AuthService {
         }
     }
 
-    private void createPetOwnerProfile(User user, RegisterRequest request) {
+    private void createPetOwnerProfile(User user) {
         PetOwnerProfile profile = new PetOwnerProfile();
         profile.setUser(user);
-        profile.setAddress(request.getAddress());
-        profile.setEmergencyContactName(request.getEmergencyContactName());
-        profile.setEmergencyContactPhone(request.getEmergencyContactPhone());
-        profile.setProfileImageUrl(request.getProfileImageUrl());
-        profile.setBio(request.getBio());
-        profile.setAllowAccountSharing(request.getAllowAccountSharing() != null ? 
-            request.getAllowAccountSharing() : false);
+        // Set default/empty values for required fields
+        profile.setAddress("");
+        profile.setEmergencyContactName("");
+        profile.setEmergencyContactPhone("");
+        profile.setProfileImageUrl("");
+        profile.setBio("");
+        profile.setAllowAccountSharing(false);
         
         petOwnerProfileRepository.save(profile);
     }
 
-    private void createVeterinarianProfile(User user, RegisterRequest request) {
+    private void createVeterinarianProfile(User user) {
         VeterinarianProfile profile = new VeterinarianProfile();
         profile.setUser(user);
-        profile.setAddress(request.getAddress());
-        profile.setLicenseNumber(request.getLicenseNumber());
-        profile.setExperienceYears(request.getExperienceYears());
-        profile.setSpecializations(request.getSpecializations());
-        profile.setClinicName(request.getClinicName());
-        profile.setClinicAddress(request.getClinicAddress());
-        profile.setAvailableFromTime(request.getAvailableFromTime());
-        profile.setAvailableToTime(request.getAvailableToTime());
-        profile.setAvailableDays(request.getAvailableDays());
-        profile.setProfileImageUrl(request.getProfileImageUrl());
-        profile.setBio(request.getBio());
-        profile.setConsultationFee(request.getConsultationFee());
-        profile.setIsAvailableForEmergency(request.getIsAvailableForEmergency() != null ? 
-            request.getIsAvailableForEmergency() : false);
-        
-        // Check if profile is complete
-        boolean isComplete = profile.getLicenseNumber() != null && 
-                           profile.getSpecializations() != null && 
-                           !profile.getSpecializations().isEmpty() &&
-                           profile.getAvailableFromTime() != null &&
-                           profile.getAvailableToTime() != null;
-        profile.setIsProfileComplete(isComplete);
+        // Set default/empty values for required fields
+        profile.setAddress("");
+        profile.setLicenseNumber("");
+        profile.setExperienceYears(0);
+        profile.setSpecializations("");
+        profile.setClinicName("");
+        profile.setClinicAddress("");
+        profile.setAvailableFromTime(null);
+        profile.setAvailableToTime(null);
+        profile.setAvailableDays("");
+        profile.setProfileImageUrl("");
+        profile.setBio("");
+        profile.setConsultationFee(0.0);
+        profile.setIsAvailableForEmergency(false);
+        profile.setIsProfileComplete(false); // Profile is not complete initially
         
         veterinarianProfileRepository.save(profile);
     }
 
-    private void createShelterProfile(User user, RegisterRequest request) {
+    private void createShelterProfile(User user) {
         ShelterProfile profile = new ShelterProfile();
         profile.setUser(user);
-        profile.setAddress(request.getAddress());
-        profile.setShelterName(request.getShelterName());
-        profile.setContactPersonName(request.getContactPersonName());
-        profile.setRegistrationNumber(request.getRegistrationNumber());
-        profile.setWebsite(request.getWebsite());
-        profile.setDescription(request.getDescription());
-        profile.setCapacity(request.getCapacity());
-        profile.setCurrentOccupancy(request.getCurrentOccupancy() != null ? 
-            request.getCurrentOccupancy() : 0);
-        profile.setProfileImageUrl(request.getProfileImageUrl());
-        profile.setImages(request.getImages());
-        profile.setIsVerified(false); // Admin will verify later
-        profile.setAcceptsDonations(request.getAcceptsDonations() != null ? 
-            request.getAcceptsDonations() : false);
-        profile.setOperatingHours(request.getOperatingHours());
+        // Set default/empty values for required fields
+        profile.setAddress("");
+        profile.setShelterName("");
+        profile.setContactPersonName("");
+        profile.setRegistrationNumber("");
+        profile.setWebsite("");
+        profile.setDescription("");
+        profile.setCapacity(1);
+        profile.setCurrentOccupancy(0);
+        profile.setProfileImageUrl("");
+        profile.setImages(java.util.Arrays.asList());
+        profile.setIsVerified(false);
+        profile.setAcceptsDonations(false);
+        profile.setOperatingHours("");
         
         shelterProfileRepository.save(profile);
     }

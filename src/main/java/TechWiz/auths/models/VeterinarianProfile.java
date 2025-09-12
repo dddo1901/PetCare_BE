@@ -1,15 +1,23 @@
 package TechWiz.auths.models;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity(name = "AuthVeterinarianProfile")
 @Table(name = "auth_veterinarian_profiles")
@@ -35,10 +43,8 @@ public class VeterinarianProfile {
     @Column
     private Integer experienceYears;
 
-    @ElementCollection
-    @CollectionTable(name = "vet_specializations", joinColumns = @JoinColumn(name = "vet_profile_id"))
-    @Column(name = "specialization")
-    private List<String> specializations;
+    @Column(columnDefinition = "TEXT")
+    private String specializations; // Store as comma-separated values
 
     @Column
     private String clinicName;
@@ -52,10 +58,8 @@ public class VeterinarianProfile {
     @Column
     private LocalTime availableToTime;
 
-    @ElementCollection
-    @CollectionTable(name = "vet_available_days", joinColumns = @JoinColumn(name = "vet_profile_id"))
-    @Column(name = "day")
-    private List<String> availableDays;
+    @Column(columnDefinition = "TEXT")
+    private String availableDays; // Store as comma-separated values
 
     @Column
     private String profileImageUrl;
@@ -79,4 +83,36 @@ public class VeterinarianProfile {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    // Utility methods for specializations
+    public java.util.List<String> getSpecializationsList() {
+        if (specializations == null || specializations.trim().isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(specializations.split(","));
+    }
+
+    public void setSpecializationsList(java.util.List<String> specializationsList) {
+        if (specializationsList == null || specializationsList.isEmpty()) {
+            this.specializations = "";
+        } else {
+            this.specializations = String.join(",", specializationsList);
+        }
+    }
+
+    // Utility methods for available days
+    public java.util.List<String> getAvailableDaysList() {
+        if (availableDays == null || availableDays.trim().isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(availableDays.split(","));
+    }
+
+    public void setAvailableDaysList(java.util.List<String> availableDaysList) {
+        if (availableDaysList == null || availableDaysList.isEmpty()) {
+            this.availableDays = "";
+        } else {
+            this.availableDays = String.join(",", availableDaysList);
+        }
+    }
 }
