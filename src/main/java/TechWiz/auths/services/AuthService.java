@@ -1,16 +1,27 @@
 package TechWiz.auths.services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import TechWiz.auths.configs.JwtUtils;
-import TechWiz.auths.models.*;
-import TechWiz.auths.models.dto.*;
-import TechWiz.auths.repositories.*;
-
-import java.util.Optional;
+import TechWiz.auths.models.PetOwnerProfile;
+import TechWiz.auths.models.ShelterProfile;
+import TechWiz.auths.models.User;
+import TechWiz.auths.models.VeterinarianProfile;
+import TechWiz.auths.models.dto.ApiResponse;
+import TechWiz.auths.models.dto.ForgotPasswordRequest;
+import TechWiz.auths.models.dto.LoginRequest;
+import TechWiz.auths.models.dto.RegisterRequest;
+import TechWiz.auths.models.dto.ResetPasswordRequest;
+import TechWiz.auths.models.dto.VerifyOtpRequest;
+import TechWiz.auths.repositories.PetOwnerProfileRepository;
+import TechWiz.auths.repositories.ShelterProfileRepository;
+import TechWiz.auths.repositories.UserRepository;
+import TechWiz.auths.repositories.VeterinarianProfileRepository;
 
 @Service
 @Transactional
@@ -92,34 +103,19 @@ public class AuthService {
                 return ApiResponse.error("Invalid email or password!");
             }
 
-            if (!user.getIsEmailVerified()) {
-                // Generate new OTP and store in Redis
-                String otpCode = otpService.generateAndStoreOtp(
-                    user.getEmail(), 
-                    OtpService.Purpose.LOGIN_VERIFICATION
-                );
-                
-                emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
-                return ApiResponse.error("Please verify your email first. New OTP sent to your email.");
-            }
-
             if (!user.getIsActive()) {
-                return ApiResponse.error("Account is deactivated. Please contact admin.");
+                return ApiResponse.error("Your account has been deactivated. Please contact support for assistance.");
             }
 
-            // Generate JWT token
-            String jwt = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
-
-            AuthResponse authResponse = new AuthResponse(
-                jwt,
-                user.getId(),
-                user.getEmail(),
-                user.getFullName(),
-                user.getRole(),
-                user.getIsEmailVerified()
+            // Always require OTP verification for login
+            String otpCode = otpService.generateAndStoreOtp(
+                user.getEmail(), 
+                OtpService.Purpose.LOGIN_VERIFICATION
             );
-
-            return ApiResponse.success("Login successful!", authResponse);
+            
+            emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
+            
+            return ApiResponse.success("Please check your email for OTP verification code.");
 
         } catch (Exception e) {
             return ApiResponse.error("Login failed: " + e.getMessage());
@@ -137,47 +133,49 @@ public class AuthService {
 
             User user = userOptional.get();
 
-            // Verify OTP using Redis
-            boolean isValidOtp = otpService.verifyOtp(
-                request.getEmail(), 
-                request.getOtpCode(), 
-                OtpService.Purpose.REGISTRATION
-            );
-
-            if (!isValidOtp) {
-                // Try login verification purpose as fallback
-                isValidOtp = otpService.verifyOtp(
-                    request.getEmail(), 
-                    request.getOtpCode(), 
-                    OtpService.Purpose.LOGIN_VERIFICATION
-                );
+            // Try to verify OTP with different purposes
+            boolean isValidOtp = false;
+            boolean isRegistrationOtp = false;
+            
+            // Check if it's a registration OTP
+            if (otpService.verifyOtp(request.getEmail(), request.getOtpCode(), OtpService.Purpose.REGISTRATION)) {
+                isValidOtp = true;
+                isRegistrationOtp = true;
+            }
+            // Check if it's a login verification OTP
+            else if (otpService.verifyOtp(request.getEmail(), request.getOtpCode(), OtpService.Purpose.LOGIN_VERIFICATION)) {
+                isValidOtp = true;
+                isRegistrationOtp = false;
             }
 
             if (!isValidOtp) {
                 return ApiResponse.error("Invalid or expired OTP!");
             }
 
-            // Verify user
-            user.setIsEmailVerified(true);
-            user.setIsActive(true);
-            userRepository.save(user);
-
-            // Send welcome email
-            emailService.sendWelcomeEmail(user.getEmail(), user.getFullName(), user.getRole().name());
-
-            // Generate JWT token
-            String jwt = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
-
-            AuthResponse authResponse = new AuthResponse(
-                jwt,
-                user.getId(),
-                user.getEmail(),
-                user.getFullName(),
-                user.getRole(),
-                user.getIsEmailVerified()
-            );
-
-            return ApiResponse.success("Email verified successfully!", authResponse);
+            // If this is registration OTP verification
+            if (isRegistrationOtp) {
+                user.setIsEmailVerified(true);
+                user.setIsActive(true);
+                userRepository.save(user);
+                
+                // Send welcome email
+                emailService.sendWelcomeEmail(user.getEmail(), user.getFullName(), user.getRole().name());
+                
+                return ApiResponse.success("Email verified successfully!");
+            }
+            // If this is login OTP verification
+            else {
+                // Check if account is active
+                if (!user.getIsActive()) {
+                    return ApiResponse.error("Your account has been deactivated. Please contact support for assistance.");
+                }
+                
+                // Generate JWT token with only essential fields
+                String jwt = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
+                
+                // Return only the token
+                return ApiResponse.success("Login successful!", jwt);
+            }
 
         } catch (Exception e) {
             return ApiResponse.error("OTP verification failed: " + e.getMessage());

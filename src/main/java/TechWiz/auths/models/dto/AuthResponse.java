@@ -1,9 +1,9 @@
 package TechWiz.auths.models.dto;
 
+import TechWiz.auths.models.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import TechWiz.auths.models.Role;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +26,15 @@ public class AuthResponse {
         this.fullName = fullName;
         this.role = role;
         this.isEmailVerified = isEmailVerified;
+    }
+    
+    // Simplified constructor for login response (only essential fields)
+    public AuthResponse(String token, Long userId, String email, Role role) {
+        this.token = token;
+        this.userId = userId;
+        this.email = email;
+        this.role = role;
+        this.isEmailVerified = true; // If they can login, email is verified
     }
     
     public AuthResponse(String message) {
