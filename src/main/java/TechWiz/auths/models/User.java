@@ -53,6 +53,9 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
     // Constructors
     public User(String email, String password, String fullName, String phoneNumber, Role role) {
         this.email = email;

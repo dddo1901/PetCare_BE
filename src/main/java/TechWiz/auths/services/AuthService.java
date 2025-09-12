@@ -1,5 +1,6 @@
 package TechWiz.auths.services;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,6 +170,10 @@ public class AuthService {
                 if (!user.getIsActive()) {
                     return ApiResponse.error("Your account has been deactivated. Please contact support for assistance.");
                 }
+                
+                // Update last login time
+                user.setLastLogin(LocalDateTime.now());
+                userRepository.save(user);
                 
                 // Generate JWT token with only essential fields
                 String jwt = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
