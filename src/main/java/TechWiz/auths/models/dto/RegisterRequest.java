@@ -31,7 +31,6 @@ public class RegisterRequest {
     
     private Role role;
     
-    @NotBlank(message = "Address is required")
     private String address;
     
     // Common profile fields
