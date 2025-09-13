@@ -1,13 +1,14 @@
 package TechWiz.admin.models;
 
 public enum PostCategory {
-    NEWS("News"),
-    HEALTH_CARE("Health Care"),
-    NUTRITION("Nutrition"),
+    CARE_TIPS("Care Tips"),
+    HEALTH_ADVICE("Health Advice"),
     TRAINING("Training"),
-    GENERAL_INFO("General Information"),
-    EMERGENCY("Emergency"),
-    ADOPTION("Adoption");
+    NUTRITION("Nutrition"),
+    GROOMING("Grooming"),
+    BEHAVIOR("Behavior"),
+    NEWS("News"),
+    GENERAL("General");
     
     private final String displayName;
     

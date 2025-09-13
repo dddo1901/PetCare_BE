@@ -1,6 +1,5 @@
 package TechWiz.admin.controllers;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +7,24 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import TechWiz.admin.models.Product;
 import TechWiz.admin.models.ProductCategory;
-import TechWiz.admin.models.PetType;
-import TechWiz.admin.services.ProductService;
 import TechWiz.admin.models.dto.CreateProductRequest;
 import TechWiz.admin.models.dto.UpdateProductStatusRequest;
+import TechWiz.admin.services.ProductService;
 import TechWiz.auths.models.dto.ApiResponse;
-
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,7 +35,7 @@ public class AdminProductController {
     @Autowired
     private ProductService productService;
 
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> createProduct(@Valid @RequestBody CreateProductRequest request,
                                          @RequestHeader("user-id") Long adminUserId) {
         try {
@@ -73,24 +80,6 @@ public class AdminProductController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error updating product status: " + e.getMessage()));
-        }
-    }
-
-    @PatchMapping("/{productId}/stock")
-    public ResponseEntity<?> updateStock(@PathVariable Long productId,
-                                       @RequestParam Integer stock,
-                                       @RequestHeader("user-id") Long adminUserId) {
-        try {
-            boolean updated = productService.updateStock(productId, stock, adminUserId);
-            if (updated) {
-                return ResponseEntity.ok(new ApiResponse(true, "Stock updated successfully"));
-            } else {
-                return ResponseEntity.notFound()
-                        .build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error updating stock: " + e.getMessage()));
         }
     }
 
@@ -164,43 +153,10 @@ public class AdminProductController {
         }
     }
 
-    @GetMapping("/analytics/low-stock")
-    public ResponseEntity<?> getLowStockProducts(@RequestParam(defaultValue = "5") Integer threshold) {
-        try {
-            List<Product> products = productService.getLowStockProducts(threshold);
-            return ResponseEntity.ok(new ApiResponse(true, "Low stock products retrieved", products));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error retrieving low stock products: " + e.getMessage()));
-        }
-    }
-
-    @GetMapping("/analytics/out-of-stock")
-    public ResponseEntity<?> getOutOfStockProducts() {
-        try {
-            List<Product> products = productService.getOutOfStockProducts();
-            return ResponseEntity.ok(new ApiResponse(true, "Out of stock products retrieved", products));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error retrieving out of stock products: " + e.getMessage()));
-        }
-    }
-
     @GetMapping("/analytics/category-count")
     public ResponseEntity<?> getProductCountByCategory(@RequestParam ProductCategory category) {
         try {
             Long count = productService.getProductCountByCategory(category);
-            return ResponseEntity.ok(new ApiResponse(true, "Product count retrieved", count));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error retrieving product count: " + e.getMessage()));
-        }
-    }
-
-    @GetMapping("/analytics/pet-type-count")
-    public ResponseEntity<?> getProductCountByPetType(@RequestParam PetType petType) {
-        try {
-            Long count = productService.getProductCountByPetType(petType);
             return ResponseEntity.ok(new ApiResponse(true, "Product count retrieved", count));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
