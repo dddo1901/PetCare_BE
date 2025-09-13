@@ -14,33 +14,29 @@ import TechWiz.shelter.models.AdoptionInquiry;
 @Repository
 public interface AdoptionInquiryRepository extends JpaRepository<AdoptionInquiry, Long> {
     
-    List<AdoptionInquiry> findByShelterProfileId(Long shelterProfileId);
+    List<AdoptionInquiry> findByShelterId(Long shelterId);
     
-    List<AdoptionInquiry> findByShelterProfileIdOrderByCreatedAtDesc(Long shelterProfileId);
-    
-    Page<AdoptionInquiry> findByShelterProfileId(Long shelterProfileId, Pageable pageable);
+    Page<AdoptionInquiry> findByShelterId(Long shelterId, Pageable pageable);
     
     List<AdoptionInquiry> findByPetId(Long petId);
     
     List<AdoptionInquiry> findByStatus(AdoptionInquiry.InquiryStatus status);
     
-    List<AdoptionInquiry> findByShelterProfileIdAndStatus(Long shelterProfileId, AdoptionInquiry.InquiryStatus status);
+    List<AdoptionInquiry> findByShelterIdAndStatus(Long shelterId, AdoptionInquiry.InquiryStatus status);
     
-    @Query("SELECT a FROM AdoptionInquiry a WHERE a.shelterProfile.id = :shelterProfileId AND " +
+    @Query("SELECT a FROM AdoptionInquiry a WHERE a.shelter.id = :shelterId AND " +
            "(:petId IS NULL OR a.pet.id = :petId) AND " +
            "(:status IS NULL OR a.status = :status) AND " +
            "(:adopterName IS NULL OR LOWER(a.adopterName) LIKE LOWER(CONCAT('%', :adopterName, '%')))")
-    Page<AdoptionInquiry> findInquiriesWithFilters(@Param("shelterProfileId") Long shelterProfileId,
+    Page<AdoptionInquiry> findInquiriesWithFilters(@Param("shelterId") Long shelterId,
                                                    @Param("petId") Long petId,
                                                    @Param("status") AdoptionInquiry.InquiryStatus status,
                                                    @Param("adopterName") String adopterName,
                                                    Pageable pageable);
     
-    @Query("SELECT COUNT(a) FROM AdoptionInquiry a WHERE a.shelterProfile.id = :shelterProfileId AND a.status = :status")
-    Long countByShelterProfileIdAndStatus(@Param("shelterProfileId") Long shelterProfileId, 
-                                        @Param("status") AdoptionInquiry.InquiryStatus status);
-    
-    Long countByShelterProfileId(Long shelterProfileId);
+    @Query("SELECT COUNT(a) FROM AdoptionInquiry a WHERE a.shelter.id = :shelterId AND a.status = :status")
+    Long countByShelterIdAndStatus(@Param("shelterId") Long shelterId, 
+                                  @Param("status") AdoptionInquiry.InquiryStatus status);
     
     List<AdoptionInquiry> findByAdopterEmailAndPetId(String adopterEmail, Long petId);
     

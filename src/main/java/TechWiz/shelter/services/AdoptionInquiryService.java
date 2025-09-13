@@ -11,14 +11,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import TechWiz.shelter.dto.AdoptionInquiryRequestDto;
-import TechWiz.shelter.dto.AdoptionInquiryResponseDto;
-import TechWiz.shelter.dto.InquiryResponseRequestDto;
-import TechWiz.shelter.dto.ShelterBasicInfoDto;
 import TechWiz.shelter.models.AdoptionInquiry;
-import TechWiz.shelter.models.ShelterPet;
+import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.Shelter;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.repositories.ShelterPetRepository;
+import TechWiz.shelter.repositories.ShelterRepository;
+import TechWiz.shelter.dto.*;
 
 @Service
 @Transactional
@@ -31,14 +30,20 @@ public class AdoptionInquiryService {
     private ShelterPetRepository petRepository;
     
     @Autowired
+    private ShelterRepository shelterRepository;
+    
+    @Autowired
     private ShelterPetService petService;
     
+    @Autowired
+    private ShelterService shelterService;
+    
     public AdoptionInquiryResponseDto createAdoptionInquiry(AdoptionInquiryRequestDto requestDto) {
-        ShelterPet pet = petRepository.findById(requestDto.getPetId())
+        Pet pet = petRepository.findById(requestDto.getPetId())
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + requestDto.getPetId()));
         
         // Check if pet is available for adoption
-        if (pet.getAdoptionStatus() != ShelterPet.AdoptionStatus.AVAILABLE) {
+        if (pet.getAdoptionStatus() != Pet.AdoptionStatus.AVAILABLE) {
             throw new RuntimeException("Pet is not available for adoption");
         }
         
@@ -50,7 +55,7 @@ public class AdoptionInquiryService {
         
         AdoptionInquiry inquiry = new AdoptionInquiry();
         inquiry.setPet(pet);
-        inquiry.setShelterProfile(pet.getShelterProfile());
+        inquiry.setShelter(pet.getShelter());
         inquiry.setAdopterName(requestDto.getAdopterName());
         inquiry.setAdopterEmail(requestDto.getAdopterEmail());
         inquiry.setAdopterPhone(requestDto.getAdopterPhone());
@@ -73,13 +78,13 @@ public class AdoptionInquiryService {
         return convertToResponseDto(inquiry);
     }
     
-    public Page<AdoptionInquiryResponseDto> getInquiriesByShelterId(Long shelterProfileId,
+    public Page<AdoptionInquiryResponseDto> getInquiriesByShelterId(Long shelterId,
                                                                    Long petId,
                                                                    AdoptionInquiry.InquiryStatus status,
                                                                    String adopterName,
                                                                    Pageable pageable) {
         Page<AdoptionInquiry> inquiries = adoptionInquiryRepository.findInquiriesWithFilters(
-            shelterProfileId, petId, status, adopterName, pageable);
+            shelterId, petId, status, adopterName, pageable);
         
         List<AdoptionInquiryResponseDto> dtos = inquiries.getContent().stream()
             .map(this::convertToResponseDto)
@@ -102,8 +107,8 @@ public class AdoptionInquiryService {
             .collect(Collectors.toList());
     }
     
-    public Long getInquiryCountByShelterIdAndStatus(Long shelterProfileId, AdoptionInquiry.InquiryStatus status) {
-        return adoptionInquiryRepository.countByShelterProfileIdAndStatus(shelterProfileId, status);
+    public Long getInquiryCountByShelterIdAndStatus(Long shelterId, AdoptionInquiry.InquiryStatus status) {
+        return adoptionInquiryRepository.countByShelterIdAndStatus(shelterId, status);
     }
     
     public AdoptionInquiryResponseDto respondToInquiry(Long id, InquiryResponseRequestDto responseDto) {
@@ -117,8 +122,8 @@ public class AdoptionInquiryService {
         
         // If approved, update pet status to pending
         if (responseDto.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED) {
-            ShelterPet pet = inquiry.getPet();
-            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.PENDING);
+            Pet pet = inquiry.getPet();
+            pet.setAdoptionStatus(Pet.AdoptionStatus.PENDING);
             petRepository.save(pet);
         }
         
@@ -135,12 +140,12 @@ public class AdoptionInquiryService {
         inquiry.setUpdatedAt(LocalDateTime.now());
         
         // Handle pet status updates based on inquiry status changes
-        ShelterPet pet = inquiry.getPet();
+        Pet pet = inquiry.getPet();
         if (status == AdoptionInquiry.InquiryStatus.APPROVED && 
             oldStatus != AdoptionInquiry.InquiryStatus.APPROVED) {
-            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.PENDING);
+            pet.setAdoptionStatus(Pet.AdoptionStatus.PENDING);
         } else if (status == AdoptionInquiry.InquiryStatus.COMPLETED) {
-            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.ADOPTED);
+            pet.setAdoptionStatus(Pet.AdoptionStatus.ADOPTED);
         } else if ((status == AdoptionInquiry.InquiryStatus.REJECTED || 
                    status == AdoptionInquiry.InquiryStatus.NEW) &&
                    oldStatus == AdoptionInquiry.InquiryStatus.APPROVED) {
@@ -151,7 +156,7 @@ public class AdoptionInquiryService {
                          i.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED);
             
             if (!hasOtherApproved) {
-                pet.setAdoptionStatus(ShelterPet.AdoptionStatus.AVAILABLE);
+                pet.setAdoptionStatus(Pet.AdoptionStatus.AVAILABLE);
             }
         }
         
@@ -166,14 +171,14 @@ public class AdoptionInquiryService {
         
         // If deleting an approved inquiry, check if pet status should be updated
         if (inquiry.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED) {
-            ShelterPet pet = inquiry.getPet();
+            Pet pet = inquiry.getPet();
             boolean hasOtherApproved = adoptionInquiryRepository.findByPetId(pet.getId())
                 .stream()
                 .anyMatch(i -> !i.getId().equals(inquiry.getId()) && 
                          i.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED);
             
             if (!hasOtherApproved) {
-                pet.setAdoptionStatus(ShelterPet.AdoptionStatus.AVAILABLE);
+                pet.setAdoptionStatus(Pet.AdoptionStatus.AVAILABLE);
                 petRepository.save(pet);
             }
         }
@@ -202,26 +207,8 @@ public class AdoptionInquiryService {
         
         // Set pet and shelter info
         dto.setPet(petService.convertToBasicInfoDto(inquiry.getPet()));
-        // Convert shelter profile to basic info DTO manually
-        if (inquiry.getShelterProfile() != null) {
-            ShelterBasicInfoDto shelterInfo = new ShelterBasicInfoDto();
-            shelterInfo.setId(inquiry.getShelterProfile().getId());
-            shelterInfo.setShelterName(inquiry.getShelterProfile().getShelterName());
-            shelterInfo.setContactPersonName(inquiry.getShelterProfile().getContactPersonName());
-            shelterInfo.setAddress(inquiry.getShelterProfile().getAddress());
-            shelterInfo.setImageUrl(inquiry.getShelterProfile().getUser().getProfileImageUrl());
-            dto.setShelter(shelterInfo);
-        }
+        dto.setShelter(shelterService.convertToBasicInfoDto(inquiry.getShelter()));
         
         return dto;
-    }
-    
-    public Long getPendingInquiriesCount(Long shelterProfileId) {
-        return adoptionInquiryRepository.countByShelterProfileIdAndStatus(
-            shelterProfileId, AdoptionInquiry.InquiryStatus.NEW);
-    }
-    
-    public List<AdoptionInquiry> getInquiriesByShelterId(Long shelterProfileId) {
-        return adoptionInquiryRepository.findByShelterProfileIdOrderByCreatedAtDesc(shelterProfileId);
     }
 }

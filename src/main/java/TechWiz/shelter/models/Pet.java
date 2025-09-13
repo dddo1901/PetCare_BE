@@ -4,21 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import TechWiz.auths.models.ShelterProfile;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShelterPet {
+public class Pet {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -115,14 +101,18 @@ public class ShelterPet {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
-    // Relationship with shelter profile
+    // Relationship with shelter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shelter_profile_id", nullable = false)
-    private ShelterProfile shelterProfile;
+    @JoinColumn(name = "shelter_id", nullable = false)
+    private Shelter shelter;
+    
+    // Relationship with care logs
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CareLog> careLogs;
     
     // Relationship with adoption inquiries
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AdoptionInquiry> adoptionInquiries = new java.util.ArrayList<>();
+    private List<AdoptionInquiry> adoptionInquiries;
     
     @PreUpdate
     protected void onUpdate() {
