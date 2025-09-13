@@ -308,7 +308,7 @@ public class ShelterController {
         dto.setAddress(shelterProfile.getAddress());
         dto.setDescription(shelterProfile.getDescription());
         dto.setWebsite(shelterProfile.getWebsite());
-        dto.setImageUrl(shelterProfile.getProfileImageUrl());
+        dto.setImageUrl(shelterProfile.getUser().getProfileImageUrl());
         dto.setStatus("ACTIVE"); // Default status as string
         dto.setIsVerified(shelterProfile.getIsVerified());
         dto.setCreatedAt(shelterProfile.getCreatedAt());

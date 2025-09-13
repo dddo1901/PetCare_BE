@@ -79,7 +79,7 @@ public class AdoptionInquiry {
     // Relationship with pet
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
-    private Pet pet;
+    private ShelterPet pet;
     
     // Relationship with shelter profile
     @ManyToOne(fetch = FetchType.LAZY)

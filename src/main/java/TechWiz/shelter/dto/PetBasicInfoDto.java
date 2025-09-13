@@ -1,10 +1,9 @@
 package TechWiz.shelter.dto;
 
+import TechWiz.shelter.models.ShelterPet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import TechWiz.shelter.models.Pet;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +12,7 @@ public class PetBasicInfoDto {
     
     private Long id;
     private String name;
-    private Pet.PetType type;
+    private ShelterPet.PetType type;
     private String breed;
     private String imageUrl;
 }

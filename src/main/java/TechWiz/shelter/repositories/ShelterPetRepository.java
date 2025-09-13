@@ -9,18 +9,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.ShelterPet;
 
 @Repository
-public interface ShelterPetRepository extends JpaRepository<Pet, Long> {
+public interface ShelterPetRepository extends JpaRepository<ShelterPet, Long> {
     
-    List<Pet> findByShelterProfileId(Long shelterProfileId);
+    List<ShelterPet> findByShelterProfileId(Long shelterProfileId);
     
-    Page<Pet> findByShelterProfileId(Long shelterProfileId, Pageable pageable);
+    List<ShelterPet> findByShelterProfileIdOrderByCreatedAtDesc(Long shelterProfileId);
     
-    List<Pet> findByAdoptionStatus(Pet.AdoptionStatus adoptionStatus);
+    Page<ShelterPet> findByShelterProfileId(Long shelterProfileId, Pageable pageable);
     
-    List<Pet> findByShelterProfileIdAndAdoptionStatus(Long shelterProfileId, Pet.AdoptionStatus adoptionStatus);
+    List<ShelterPet> findByAdoptionStatus(ShelterPet.AdoptionStatus adoptionStatus);
+    
+    List<ShelterPet> findByShelterProfileIdAndAdoptionStatus(Long shelterProfileId, ShelterPet.AdoptionStatus adoptionStatus);
     
     Long countByShelterProfileId(Long shelterProfileId);
     
@@ -32,28 +34,28 @@ public interface ShelterPetRepository extends JpaRepository<Pet, Long> {
            "(:healthStatus IS NULL OR p.healthStatus = :healthStatus) AND " +
            "(:gender IS NULL OR p.gender = :gender) AND " +
            "(:size IS NULL OR p.size = :size)")
-    Page<Pet> findPetsWithFilters(@Param("shelterProfileId") Long shelterProfileId,
+    Page<ShelterPet> findPetsWithFilters(@Param("shelterProfileId") Long shelterProfileId,
                                  @Param("name") String name,
-                                 @Param("type") Pet.PetType type,
+                                 @Param("type") ShelterPet.PetType type,
                                  @Param("breed") String breed,
-                                 @Param("adoptionStatus") Pet.AdoptionStatus adoptionStatus,
-                                 @Param("healthStatus") Pet.HealthStatus healthStatus,
-                                 @Param("gender") Pet.Gender gender,
-                                 @Param("size") Pet.Size size,
+                                 @Param("adoptionStatus") ShelterPet.AdoptionStatus adoptionStatus,
+                                 @Param("healthStatus") ShelterPet.HealthStatus healthStatus,
+                                 @Param("gender") ShelterPet.Gender gender,
+                                 @Param("size") ShelterPet.Size size,
                                  Pageable pageable);
     
     @Query("SELECT COUNT(p) FROM ShelterPet p WHERE p.shelterProfile.id = :shelterProfileId AND p.adoptionStatus = :status")
     Long countByShelterProfileIdAndAdoptionStatus(@Param("shelterProfileId") Long shelterProfileId, 
-                                                @Param("status") Pet.AdoptionStatus status);
+                                                @Param("status") ShelterPet.AdoptionStatus status);
     
     @Query("SELECT p FROM ShelterPet p WHERE p.adoptionStatus = 'AVAILABLE' AND " +
            "(:type IS NULL OR p.type = :type) AND " +
            "(:breed IS NULL OR LOWER(p.breed) LIKE LOWER(CONCAT('%', :breed, '%'))) AND " +
            "(:gender IS NULL OR p.gender = :gender) AND " +
            "(:size IS NULL OR p.size = :size)")
-    Page<Pet> findAvailablePetsWithFilters(@Param("type") Pet.PetType type,
+    Page<ShelterPet> findAvailablePetsWithFilters(@Param("type") ShelterPet.PetType type,
                                           @Param("breed") String breed,
-                                          @Param("gender") Pet.Gender gender,
-                                          @Param("size") Pet.Size size,
+                                          @Param("gender") ShelterPet.Gender gender,
+                                          @Param("size") ShelterPet.Size size,
                                           Pageable pageable);
 }

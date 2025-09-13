@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import TechWiz.shelter.dto.PetRequestDto;
 import TechWiz.shelter.dto.PetResponseDto;
-import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.ShelterPet;
 import TechWiz.shelter.services.ShelterPetService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -83,23 +83,27 @@ public class ShelterPetController {
     public ResponseEntity<?> getPetsByShelterId(
             @PathVariable @Positive Long shelterId,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Pet.PetType type,
+            @RequestParam(required = false) ShelterPet.PetType type,
             @RequestParam(required = false) String breed,
-            @RequestParam(required = false) Pet.AdoptionStatus adoptionStatus,
-            @RequestParam(required = false) Pet.HealthStatus healthStatus,
-            @RequestParam(required = false) Pet.Gender gender,
-            @RequestParam(required = false) Pet.Size size,
+            @RequestParam(required = false) ShelterPet.AdoptionStatus adoptionStatus,
+            @RequestParam(required = false) ShelterPet.HealthStatus healthStatus,
+            @RequestParam(required = false) ShelterPet.Gender gender,
+            @RequestParam(required = false) ShelterPet.Size size,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
         try {
+            System.out.println("DEBUG: getPetsByShelterId called with shelterId: " + shelterId);
+            
             Sort sort = sortDir.equalsIgnoreCase("desc") ? 
                 Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, pageSize, sort);
             
             Page<PetResponseDto> pets = petService.getPetsByShelterId(
                 shelterId, name, type, breed, adoptionStatus, healthStatus, gender, size, pageable);
+            
+            System.out.println("DEBUG: Found " + pets.getTotalElements() + " pets for shelterId: " + shelterId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -111,6 +115,7 @@ public class ShelterPetController {
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.out.println("DEBUG: Error getting pets for shelterId " + shelterId + ": " + e.getMessage());
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
@@ -140,10 +145,10 @@ public class ShelterPetController {
     
     @GetMapping("/pets/available")
     public ResponseEntity<?> getAvailablePetsForAdoption(
-            @RequestParam(required = false) Pet.PetType type,
+            @RequestParam(required = false) ShelterPet.PetType type,
             @RequestParam(required = false) String breed,
-            @RequestParam(required = false) Pet.Gender gender,
-            @RequestParam(required = false) Pet.Size size,
+            @RequestParam(required = false) ShelterPet.Gender gender,
+            @RequestParam(required = false) ShelterPet.Size size,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -197,7 +202,7 @@ public class ShelterPetController {
     
     @PutMapping("/pets/{id}/adoption-status")
     public ResponseEntity<?> updatePetAdoptionStatus(@PathVariable @Positive Long id,
-                                                    @RequestParam Pet.AdoptionStatus adoptionStatus) {
+                                                    @RequestParam ShelterPet.AdoptionStatus adoptionStatus) {
         try {
             PetResponseDto pet = petService.updatePetAdoptionStatus(id, adoptionStatus);
             
@@ -240,9 +245,9 @@ public class ShelterPetController {
         try {
             Map<String, Long> stats = new HashMap<>();
             stats.put("total", petService.getTotalPetsByShelterProfile(shelterId));
-            stats.put("available", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.AVAILABLE));
-            stats.put("pending", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.PENDING));
-            stats.put("adopted", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.ADOPTED));
+            stats.put("available", petService.getPetCountByStatus(shelterId, ShelterPet.AdoptionStatus.AVAILABLE));
+            stats.put("pending", petService.getPetCountByStatus(shelterId, ShelterPet.AdoptionStatus.PENDING));
+            stats.put("adopted", petService.getPetCountByStatus(shelterId, ShelterPet.AdoptionStatus.ADOPTED));
             stats.put("totalViews", petService.getTotalViewsByShelterProfile(shelterId));
             stats.put("totalApplications", petService.getTotalApplicationsByShelterProfile(shelterId));
             

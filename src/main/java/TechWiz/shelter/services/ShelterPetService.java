@@ -18,7 +18,7 @@ import TechWiz.shelter.dto.PetRequestDto;
 import TechWiz.shelter.dto.PetResponseDto;
 import TechWiz.shelter.dto.ShelterBasicInfoDto;
 import TechWiz.shelter.models.AdoptionInquiry;
-import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.ShelterPet;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.repositories.ShelterPetRepository;
 
@@ -39,30 +39,30 @@ public class ShelterPetService {
         ShelterProfile shelterProfile = shelterProfileRepository.findById(shelterProfileId)
             .orElseThrow(() -> new RuntimeException("Shelter profile not found with id: " + shelterProfileId));
         
-        Pet pet = new Pet();
+        ShelterPet pet = new ShelterPet();
         mapRequestDtoToPet(requestDto, pet);
         pet.setShelterProfile(shelterProfile);
         
-        Pet savedPet = petRepository.save(pet);
+        ShelterPet savedPet = petRepository.save(pet);
         return convertToResponseDto(savedPet);
     }
     
     public PetResponseDto getPetById(Long id) {
-        Pet pet = petRepository.findById(id)
+        ShelterPet pet = petRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + id));
         return convertToResponseDto(pet);
     }
     
     public Page<PetResponseDto> getPetsByShelterId(Long shelterProfileId, 
                                                   String name, 
-                                                  Pet.PetType type, 
+                                                  ShelterPet.PetType type, 
                                                   String breed,
-                                                  Pet.AdoptionStatus adoptionStatus,
-                                                  Pet.HealthStatus healthStatus,
-                                                  Pet.Gender gender,
-                                                  Pet.Size size,
+                                                  ShelterPet.AdoptionStatus adoptionStatus,
+                                                  ShelterPet.HealthStatus healthStatus,
+                                                  ShelterPet.Gender gender,
+                                                  ShelterPet.Size size,
                                                   Pageable pageable) {
-        Page<Pet> pets = petRepository.findPetsWithFilters(
+        Page<ShelterPet> pets = petRepository.findPetsWithFilters(
             shelterProfileId, name, type, breed, adoptionStatus, healthStatus, gender, size, pageable);
         
         List<PetResponseDto> dtos = pets.getContent().stream()
@@ -73,19 +73,19 @@ public class ShelterPetService {
     }
     
     public List<PetResponseDto> getAvailablePetsByShelterId(Long shelterProfileId) {
-        List<Pet> pets = petRepository.findByShelterProfileIdAndAdoptionStatus(
-            shelterProfileId, Pet.AdoptionStatus.AVAILABLE);
+        List<ShelterPet> pets = petRepository.findByShelterProfileIdAndAdoptionStatus(
+            shelterProfileId, ShelterPet.AdoptionStatus.AVAILABLE);
         return pets.stream()
             .map(this::convertToResponseDto)
             .collect(Collectors.toList());
     }
     
-    public Page<PetResponseDto> getAvailablePetsForAdoption(Pet.PetType type,
+    public Page<PetResponseDto> getAvailablePetsForAdoption(ShelterPet.PetType type,
                                                            String breed,
-                                                           Pet.Gender gender,
-                                                           Pet.Size size,
+                                                           ShelterPet.Gender gender,
+                                                           ShelterPet.Size size,
                                                            Pageable pageable) {
-        Page<Pet> pets = petRepository.findAvailablePetsWithFilters(
+        Page<ShelterPet> pets = petRepository.findAvailablePetsWithFilters(
             type, breed, gender, size, pageable);
         
         List<PetResponseDto> dtos = pets.getContent().stream()
@@ -96,24 +96,24 @@ public class ShelterPetService {
     }
     
     public PetResponseDto updatePet(Long id, PetRequestDto requestDto) {
-        Pet pet = petRepository.findById(id)
+        ShelterPet pet = petRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + id));
         
         mapRequestDtoToPet(requestDto, pet);
         pet.setUpdatedAt(LocalDateTime.now());
         
-        Pet updatedPet = petRepository.save(pet);
+        ShelterPet updatedPet = petRepository.save(pet);
         return convertToResponseDto(updatedPet);
     }
     
-    public PetResponseDto updatePetAdoptionStatus(Long id, Pet.AdoptionStatus adoptionStatus) {
-        Pet pet = petRepository.findById(id)
+    public PetResponseDto updatePetAdoptionStatus(Long id, ShelterPet.AdoptionStatus adoptionStatus) {
+        ShelterPet pet = petRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + id));
         
         pet.setAdoptionStatus(adoptionStatus);
         pet.setUpdatedAt(LocalDateTime.now());
         
-        Pet updatedPet = petRepository.save(pet);
+        ShelterPet updatedPet = petRepository.save(pet);
         return convertToResponseDto(updatedPet);
     }
     
@@ -124,7 +124,7 @@ public class ShelterPetService {
         petRepository.deleteById(id);
     }
     
-    private void mapRequestDtoToPet(PetRequestDto requestDto, Pet pet) {
+    private void mapRequestDtoToPet(PetRequestDto requestDto, ShelterPet pet) {
         pet.setName(requestDto.getName());
         pet.setType(requestDto.getType());
         pet.setBreed(requestDto.getBreed());
@@ -136,9 +136,9 @@ public class ShelterPetService {
         pet.setImageUrl(requestDto.getImageUrl());
         pet.setDescription(requestDto.getDescription());
         pet.setAdoptionStatus(requestDto.getAdoptionStatus() != null ? 
-            requestDto.getAdoptionStatus() : Pet.AdoptionStatus.AVAILABLE);
+            requestDto.getAdoptionStatus() : ShelterPet.AdoptionStatus.AVAILABLE);
         pet.setHealthStatus(requestDto.getHealthStatus() != null ? 
-            requestDto.getHealthStatus() : Pet.HealthStatus.HEALTHY);
+            requestDto.getHealthStatus() : ShelterPet.HealthStatus.HEALTHY);
         pet.setVaccinated(requestDto.getVaccinated() != null ? requestDto.getVaccinated() : false);
         pet.setSpayedNeutered(requestDto.getSpayedNeutered() != null ? requestDto.getSpayedNeutered() : false);
         pet.setMicrochipped(requestDto.getMicrochipped() != null ? requestDto.getMicrochipped() : false);
@@ -146,14 +146,14 @@ public class ShelterPetService {
         pet.setGoodWithKids(requestDto.getGoodWithKids() != null ? requestDto.getGoodWithKids() : false);
         pet.setGoodWithPets(requestDto.getGoodWithPets() != null ? requestDto.getGoodWithPets() : false);
         pet.setEnergyLevel(requestDto.getEnergyLevel() != null ? 
-            requestDto.getEnergyLevel() : Pet.EnergyLevel.MEDIUM);
+            requestDto.getEnergyLevel() : ShelterPet.EnergyLevel.MEDIUM);
         pet.setSpecialNeeds(requestDto.getSpecialNeeds());
         pet.setAdoptionFee(requestDto.getAdoptionFee());
         pet.setPersonality(requestDto.getPersonality());
         pet.setRequirements(requestDto.getRequirements());
     }
     
-    private PetResponseDto convertToResponseDto(Pet pet) {
+    private PetResponseDto convertToResponseDto(ShelterPet pet) {
         PetResponseDto dto = new PetResponseDto();
         dto.setId(pet.getId());
         dto.setName(pet.getName());
@@ -190,7 +190,7 @@ public class ShelterPetService {
             shelterInfo.setShelterName(pet.getShelterProfile().getShelterName());
             shelterInfo.setContactPersonName(pet.getShelterProfile().getContactPersonName());
             shelterInfo.setAddress(pet.getShelterProfile().getAddress());
-            shelterInfo.setImageUrl(pet.getShelterProfile().getProfileImageUrl());
+            shelterInfo.setImageUrl(pet.getShelterProfile().getUser().getProfileImageUrl());
             dto.setShelter(shelterInfo);
         }
         
@@ -208,7 +208,7 @@ public class ShelterPetService {
         return dto;
     }
     
-    public PetBasicInfoDto convertToBasicInfoDto(Pet pet) {
+    public PetBasicInfoDto convertToBasicInfoDto(ShelterPet pet) {
         PetBasicInfoDto dto = new PetBasicInfoDto();
         dto.setId(pet.getId());
         dto.setName(pet.getName());
@@ -223,13 +223,13 @@ public class ShelterPetService {
         return petRepository.countByShelterProfileId(shelterProfileId);
     }
     
-    public Long getPetCountByStatus(Long shelterProfileId, Pet.AdoptionStatus status) {
+    public Long getPetCountByStatus(Long shelterProfileId, ShelterPet.AdoptionStatus status) {
         return petRepository.countByShelterProfileIdAndAdoptionStatus(shelterProfileId, status);
     }
     
     public Long getTotalViewsByShelterProfile(Long shelterProfileId) {
         return petRepository.findByShelterProfileId(shelterProfileId).stream()
-            .mapToLong(pet -> 0L) // placeholder - would need views field in Pet model
+            .mapToLong(pet -> 0L) // placeholder - would need views field in ShelterPet model
             .sum();
     }
     
@@ -238,9 +238,9 @@ public class ShelterPetService {
     }
     
     public void incrementPetViews(Long petId) {
-        Pet pet = petRepository.findById(petId)
+        ShelterPet pet = petRepository.findById(petId)
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
-        // Would increment view count if field exists in Pet model
+        // Would increment view count if field exists in ShelterPet model
         // For now, just update the updatedAt field to track access
         pet.setUpdatedAt(LocalDateTime.now());
         petRepository.save(pet);

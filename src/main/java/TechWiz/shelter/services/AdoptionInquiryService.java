@@ -16,7 +16,7 @@ import TechWiz.shelter.dto.AdoptionInquiryResponseDto;
 import TechWiz.shelter.dto.InquiryResponseRequestDto;
 import TechWiz.shelter.dto.ShelterBasicInfoDto;
 import TechWiz.shelter.models.AdoptionInquiry;
-import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.ShelterPet;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.repositories.ShelterPetRepository;
 
@@ -34,11 +34,11 @@ public class AdoptionInquiryService {
     private ShelterPetService petService;
     
     public AdoptionInquiryResponseDto createAdoptionInquiry(AdoptionInquiryRequestDto requestDto) {
-        Pet pet = petRepository.findById(requestDto.getPetId())
+        ShelterPet pet = petRepository.findById(requestDto.getPetId())
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + requestDto.getPetId()));
         
         // Check if pet is available for adoption
-        if (pet.getAdoptionStatus() != Pet.AdoptionStatus.AVAILABLE) {
+        if (pet.getAdoptionStatus() != ShelterPet.AdoptionStatus.AVAILABLE) {
             throw new RuntimeException("Pet is not available for adoption");
         }
         
@@ -117,8 +117,8 @@ public class AdoptionInquiryService {
         
         // If approved, update pet status to pending
         if (responseDto.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED) {
-            Pet pet = inquiry.getPet();
-            pet.setAdoptionStatus(Pet.AdoptionStatus.PENDING);
+            ShelterPet pet = inquiry.getPet();
+            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.PENDING);
             petRepository.save(pet);
         }
         
@@ -135,12 +135,12 @@ public class AdoptionInquiryService {
         inquiry.setUpdatedAt(LocalDateTime.now());
         
         // Handle pet status updates based on inquiry status changes
-        Pet pet = inquiry.getPet();
+        ShelterPet pet = inquiry.getPet();
         if (status == AdoptionInquiry.InquiryStatus.APPROVED && 
             oldStatus != AdoptionInquiry.InquiryStatus.APPROVED) {
-            pet.setAdoptionStatus(Pet.AdoptionStatus.PENDING);
+            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.PENDING);
         } else if (status == AdoptionInquiry.InquiryStatus.COMPLETED) {
-            pet.setAdoptionStatus(Pet.AdoptionStatus.ADOPTED);
+            pet.setAdoptionStatus(ShelterPet.AdoptionStatus.ADOPTED);
         } else if ((status == AdoptionInquiry.InquiryStatus.REJECTED || 
                    status == AdoptionInquiry.InquiryStatus.NEW) &&
                    oldStatus == AdoptionInquiry.InquiryStatus.APPROVED) {
@@ -151,7 +151,7 @@ public class AdoptionInquiryService {
                          i.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED);
             
             if (!hasOtherApproved) {
-                pet.setAdoptionStatus(Pet.AdoptionStatus.AVAILABLE);
+                pet.setAdoptionStatus(ShelterPet.AdoptionStatus.AVAILABLE);
             }
         }
         
@@ -166,14 +166,14 @@ public class AdoptionInquiryService {
         
         // If deleting an approved inquiry, check if pet status should be updated
         if (inquiry.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED) {
-            Pet pet = inquiry.getPet();
+            ShelterPet pet = inquiry.getPet();
             boolean hasOtherApproved = adoptionInquiryRepository.findByPetId(pet.getId())
                 .stream()
                 .anyMatch(i -> !i.getId().equals(inquiry.getId()) && 
                          i.getStatus() == AdoptionInquiry.InquiryStatus.APPROVED);
             
             if (!hasOtherApproved) {
-                pet.setAdoptionStatus(Pet.AdoptionStatus.AVAILABLE);
+                pet.setAdoptionStatus(ShelterPet.AdoptionStatus.AVAILABLE);
                 petRepository.save(pet);
             }
         }
@@ -209,10 +209,19 @@ public class AdoptionInquiryService {
             shelterInfo.setShelterName(inquiry.getShelterProfile().getShelterName());
             shelterInfo.setContactPersonName(inquiry.getShelterProfile().getContactPersonName());
             shelterInfo.setAddress(inquiry.getShelterProfile().getAddress());
-            shelterInfo.setImageUrl(inquiry.getShelterProfile().getProfileImageUrl());
+            shelterInfo.setImageUrl(inquiry.getShelterProfile().getUser().getProfileImageUrl());
             dto.setShelter(shelterInfo);
         }
         
         return dto;
+    }
+    
+    public Long getPendingInquiriesCount(Long shelterProfileId) {
+        return adoptionInquiryRepository.countByShelterProfileIdAndStatus(
+            shelterProfileId, AdoptionInquiry.InquiryStatus.NEW);
+    }
+    
+    public List<AdoptionInquiry> getInquiriesByShelterId(Long shelterProfileId) {
+        return adoptionInquiryRepository.findByShelterProfileIdOrderByCreatedAtDesc(shelterProfileId);
     }
 }

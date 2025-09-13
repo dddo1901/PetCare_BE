@@ -16,6 +16,8 @@ public interface AdoptionInquiryRepository extends JpaRepository<AdoptionInquiry
     
     List<AdoptionInquiry> findByShelterProfileId(Long shelterProfileId);
     
+    List<AdoptionInquiry> findByShelterProfileIdOrderByCreatedAtDesc(Long shelterProfileId);
+    
     Page<AdoptionInquiry> findByShelterProfileId(Long shelterProfileId, Pageable pageable);
     
     List<AdoptionInquiry> findByPetId(Long petId);

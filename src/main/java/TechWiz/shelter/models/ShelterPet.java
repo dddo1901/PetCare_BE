@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pet {
+public class ShelterPet {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -119,10 +119,6 @@ public class Pet {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shelter_profile_id", nullable = false)
     private ShelterProfile shelterProfile;
-    
-    // Relationship with care logs
-    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CareLog> careLogs = new java.util.ArrayList<>();
     
     // Relationship with adoption inquiries
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

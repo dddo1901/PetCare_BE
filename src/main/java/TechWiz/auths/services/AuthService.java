@@ -76,7 +76,7 @@ public class AuthService {
                 request.getEmail(), 
                 OtpService.Purpose.REGISTRATION
             );
-            System.out.println("Generated OTP: " + otpCode); // For debugging, remove in production 
+            System.out.println("Generated OTP: " + otpCode); // For debugging purposes only
             // Create role-specific profile
             createRoleSpecificProfile(savedUser, request);
 
@@ -113,7 +113,7 @@ public class AuthService {
                 user.getEmail(), 
                 OtpService.Purpose.LOGIN_VERIFICATION
             );
-            System.out.println("Generated OTP for login: " + otpCode); // For debugging, remove in production
+            System.out.println("Generated OTP: " + otpCode); // For debugging purposes only
             
             emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
             
@@ -198,20 +198,26 @@ public class AuthService {
 
             User user = userOptional.get();
 
-            if (user.getIsEmailVerified()) {
-                return ApiResponse.error("Email is already verified!");
-            }
+            // For registration process - check if email is already verified
+            // For login process - allow resend even if email is verified
+            boolean isForRegistration = !user.getIsEmailVerified();
+            
+            String purpose = isForRegistration ? 
+                OtpService.Purpose.REGISTRATION : 
+                OtpService.Purpose.LOGIN_VERIFICATION;
 
             // Generate new OTP and store in Redis
-            String otpCode = otpService.generateAndStoreOtp(
-                email, 
-                OtpService.Purpose.REGISTRATION
-            );
-            System.out.println("Generated OTP: " + otpCode); // For debugging, remove in production
+            String otpCode = otpService.generateAndStoreOtp(email, purpose);
+            System.out.println("Generated OTP: " + otpCode); // For debugging purposes only
+
             // Send OTP email
             emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
 
-            return ApiResponse.success("New OTP sent to your email!");
+            String message = isForRegistration ? 
+                "New registration OTP sent to your email!" : 
+                "New login verification OTP sent to your email!";
+                
+            return ApiResponse.success(message);
 
         } catch (Exception e) {
             return ApiResponse.error("Failed to resend OTP: " + e.getMessage());
@@ -277,7 +283,7 @@ public class AuthService {
         }
     }
 
-    private void createRoleSpecificProfile(User user, RegisterRequest request) {
+    private void createRoleSpecificProfile(User user, RegisterRequest _request) {
         switch (user.getRole()) {
             case PET_OWNER:
                 createPetOwnerProfile(user);
@@ -304,7 +310,6 @@ public class AuthService {
         profile.setAddress("");
         profile.setEmergencyContactName("");
         profile.setEmergencyContactPhone("");
-        profile.setProfileImageUrl("");
         profile.setBio("");
         profile.setAllowAccountSharing(false);
         
@@ -324,7 +329,6 @@ public class AuthService {
         profile.setAvailableFromTime(null);
         profile.setAvailableToTime(null);
         profile.setAvailableDays("");
-        profile.setProfileImageUrl("");
         profile.setBio("");
         profile.setConsultationFee(0.0);
         profile.setIsAvailableForEmergency(false);
@@ -345,7 +349,6 @@ public class AuthService {
         profile.setDescription("");
         profile.setCapacity(1);
         profile.setCurrentOccupancy(0);
-        profile.setProfileImageUrl("");
         profile.setImages(java.util.Arrays.asList());
         profile.setIsVerified(false);
         profile.setAcceptsDonations(false);
@@ -362,5 +365,16 @@ public class AuthService {
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
+    }
+
+    public User updateUserAvatar(String email, String profileImageUrl) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        User user = userOptional.get();
+        user.setProfileImageUrl(profileImageUrl);
+        return userRepository.save(user);
     }
 }
