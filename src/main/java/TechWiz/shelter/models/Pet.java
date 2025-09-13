@@ -122,11 +122,11 @@ public class Pet {
     
     // Relationship with care logs
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CareLog> careLogs;
+    private List<CareLog> careLogs = new java.util.ArrayList<>();
     
     // Relationship with adoption inquiries
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AdoptionInquiry> adoptionInquiries;
+    private List<AdoptionInquiry> adoptionInquiries = new java.util.ArrayList<>();
     
     @PreUpdate
     protected void onUpdate() {

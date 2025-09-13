@@ -194,12 +194,15 @@ public class ShelterPetService {
             dto.setShelter(shelterInfo);
         }
         
-        // Add statistics
-        dto.setTotalInquiries((long) pet.getAdoptionInquiries().size());
+        // Add statistics - with null check
+        dto.setTotalInquiries(pet.getAdoptionInquiries() != null ? 
+                             (long) pet.getAdoptionInquiries().size() : 0L);
         // Count pending inquiries by shelter profile ID
         if (pet.getShelterProfile() != null) {
             dto.setPendingInquiries(adoptionInquiryRepository.countByShelterProfileIdAndStatus(
                 pet.getShelterProfile().getId(), AdoptionInquiry.InquiryStatus.NEW));
+        } else {
+            dto.setPendingInquiries(0L);
         }
         
         return dto;
