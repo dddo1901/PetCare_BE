@@ -202,4 +202,32 @@ public class ShelterPetService {
         dto.setImageUrl(pet.getImageUrl());
         return dto;
     }
+    
+    // Statistics methods for shelter dashboard
+    public Long getTotalPetsByShelter(Long shelterId) {
+        return petRepository.countByShelterId(shelterId);
+    }
+    
+    public Long getPetCountByStatus(Long shelterId, Pet.AdoptionStatus status) {
+        return petRepository.countByShelterIdAndAdoptionStatus(shelterId, status);
+    }
+    
+    public Long getTotalViewsByShelter(Long shelterId) {
+        return petRepository.findByShelterId(shelterId).stream()
+            .mapToLong(pet -> 0L) // placeholder - would need views field in Pet model
+            .sum();
+    }
+    
+    public Long getTotalApplicationsByShelter(Long shelterId) {
+        return adoptionInquiryRepository.countByShelterId(shelterId);
+    }
+    
+    public void incrementPetViews(Long petId) {
+        Pet pet = petRepository.findById(petId)
+            .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        // Would increment view count if field exists in Pet model
+        // For now, just update the updatedAt field to track access
+        pet.setUpdatedAt(LocalDateTime.now());
+        petRepository.save(pet);
+    }
 }

@@ -38,6 +38,8 @@ public interface AdoptionInquiryRepository extends JpaRepository<AdoptionInquiry
     Long countByShelterIdAndStatus(@Param("shelterId") Long shelterId, 
                                   @Param("status") AdoptionInquiry.InquiryStatus status);
     
+    Long countByShelterId(Long shelterId);
+    
     List<AdoptionInquiry> findByAdopterEmailAndPetId(String adopterEmail, Long petId);
     
     boolean existsByAdopterEmailAndPetId(String adopterEmail, Long petId);

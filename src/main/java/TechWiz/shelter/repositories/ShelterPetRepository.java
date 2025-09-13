@@ -22,6 +22,8 @@ public interface ShelterPetRepository extends JpaRepository<Pet, Long> {
     
     List<Pet> findByShelterIdAndAdoptionStatus(Long shelterId, Pet.AdoptionStatus adoptionStatus);
     
+    Long countByShelterId(Long shelterId);
+    
     @Query("SELECT p FROM ShelterPet p WHERE p.shelter.id = :shelterId AND " +
            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:type IS NULL OR p.type = :type) AND " +

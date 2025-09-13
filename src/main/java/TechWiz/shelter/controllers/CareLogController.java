@@ -14,14 +14,23 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-
+import TechWiz.shelter.dto.CareLogRequestDto;
+import TechWiz.shelter.dto.CareLogResponseDto;
 import TechWiz.shelter.models.CareLog;
 import TechWiz.shelter.services.CareLogService;
-import TechWiz.shelter.dto.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @RestController
 @RequestMapping("/api/shelter")
@@ -234,6 +243,51 @@ public class CareLogController {
             response.put("message", e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+    
+    @GetMapping("/{shelterId}/care-logs/recent")
+    public ResponseEntity<?> getRecentCareLogsByShelterId(@PathVariable @Positive Long shelterId,
+                                                         @RequestParam(defaultValue = "10") int limit) {
+        try {
+            List<CareLogResponseDto> careLogs = careLogService.getRecentCareLogsByShelterId(shelterId, limit);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", careLogs);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    @GetMapping("/{shelterId}/care-logs/summary")
+    public ResponseEntity<?> getCareLogsSummaryByShelterId(@PathVariable @Positive Long shelterId,
+                                                          @RequestParam(required = false) String dateFrom,
+                                                          @RequestParam(required = false) String dateTo) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom + " 00:00:00", formatter) : null;
+            LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo + " 23:59:59", formatter) : null;
+            
+            Map<String, Object> summary = careLogService.getCareLogsSummary(shelterId, dateFromParsed, dateToParsed);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", summary);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }

@@ -1,21 +1,25 @@
 package TechWiz.shelter.services;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import TechWiz.shelter.dto.CareLogRequestDto;
+import TechWiz.shelter.dto.CareLogResponseDto;
 import TechWiz.shelter.models.CareLog;
 import TechWiz.shelter.models.Pet;
 import TechWiz.shelter.repositories.CareLogRepository;
 import TechWiz.shelter.repositories.ShelterPetRepository;
-import TechWiz.shelter.dto.*;
 
 @Service
 @Transactional
@@ -151,5 +155,36 @@ public class CareLogService {
         dto.setPet(petService.convertToBasicInfoDto(careLog.getPet()));
         
         return dto;
+    }
+    
+    public List<CareLogResponseDto> getRecentCareLogsByShelterId(Long shelterId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<CareLog> careLogs = careLogRepository.findRecentLogsByShelter(shelterId, pageable);
+        return careLogs.stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
+    }
+    
+    public Map<String, Object> getCareLogsSummary(Long shelterId, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        Map<String, Object> summary = new HashMap<>();
+        
+        // Total counts by type
+        Map<String, Long> typeCounts = new HashMap<>();
+        for (CareLog.CareType type : CareLog.CareType.values()) {
+            Long count = careLogRepository.countLogsByShelterAndTypeInDateRange(shelterId, type, dateFrom, dateTo);
+            typeCounts.put(type.toString().toLowerCase(), count);
+        }
+        summary.put("byType", typeCounts);
+        
+        // Total count
+        Long totalCount = careLogRepository.countLogsByShelterInDateRange(shelterId, dateFrom, dateTo);
+        summary.put("total", totalCount);
+        
+        // Most active pets
+        Pageable pageable = PageRequest.of(0, 5);
+        List<Object[]> activePets = careLogRepository.findMostActivePetsByShelterId(shelterId, dateFrom, dateTo, pageable);
+        summary.put("mostActivePets", activePets);
+        
+        return summary;
     }
 }
