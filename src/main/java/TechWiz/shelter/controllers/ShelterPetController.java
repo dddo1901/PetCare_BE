@@ -40,10 +40,10 @@ public class ShelterPetController {
     private ShelterPetService petService;
     
     @PostMapping("/{shelterId}/pets")
-    public ResponseEntity<?> createPet(@PathVariable @Positive Long shelterId,
+    public ResponseEntity<?> createPet(@PathVariable @Positive Long shelterId, // Now using shelter profile ID
                                       @Valid @RequestBody PetRequestDto requestDto) {
         try {
-            PetResponseDto pet = petService.createPet(shelterId, requestDto);
+            PetResponseDto pet = petService.createPet(shelterId, requestDto); // shelterId is actually shelter profile ID
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -239,12 +239,12 @@ public class ShelterPetController {
     public ResponseEntity<?> getPetStatsByShelterId(@PathVariable @Positive Long shelterId) {
         try {
             Map<String, Long> stats = new HashMap<>();
-            stats.put("total", petService.getTotalPetsByShelter(shelterId));
+            stats.put("total", petService.getTotalPetsByShelterProfile(shelterId));
             stats.put("available", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.AVAILABLE));
             stats.put("pending", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.PENDING));
             stats.put("adopted", petService.getPetCountByStatus(shelterId, Pet.AdoptionStatus.ADOPTED));
-            stats.put("totalViews", petService.getTotalViewsByShelter(shelterId));
-            stats.put("totalApplications", petService.getTotalApplicationsByShelter(shelterId));
+            stats.put("totalViews", petService.getTotalViewsByShelterProfile(shelterId));
+            stats.put("totalApplications", petService.getTotalApplicationsByShelterProfile(shelterId));
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

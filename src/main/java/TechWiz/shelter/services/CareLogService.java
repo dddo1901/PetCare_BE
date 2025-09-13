@@ -34,12 +34,12 @@ public class CareLogService {
     @Autowired
     private ShelterPetService petService;
     
-    public CareLogResponseDto createCareLog(Long shelterId, CareLogRequestDto requestDto) {
+    public CareLogResponseDto createCareLog(Long shelterProfileId, CareLogRequestDto requestDto) {
         Pet pet = petRepository.findById(requestDto.getPetId())
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + requestDto.getPetId()));
         
-        // Verify pet belongs to the shelter
-        if (!pet.getShelter().getId().equals(shelterId)) {
+        // Verify pet belongs to the shelter profile
+        if (!pet.getShelterProfile().getId().equals(shelterProfileId)) {
             throw new RuntimeException("Pet does not belong to the specified shelter");
         }
         
@@ -63,7 +63,7 @@ public class CareLogService {
         return convertToResponseDto(careLog);
     }
     
-    public Page<CareLogResponseDto> getCareLogsByShelterId(Long shelterId,
+    public Page<CareLogResponseDto> getCareLogsByShelterId(Long shelterProfileId,
                                                           Long petId,
                                                           CareLog.CareType type,
                                                           String staffName,
@@ -71,7 +71,7 @@ public class CareLogService {
                                                           LocalDateTime dateTo,
                                                           Pageable pageable) {
         Page<CareLog> careLogs = careLogRepository.findCareLogsWithFilters(
-            shelterId, petId, type, staffName, dateFrom, dateTo, pageable);
+            shelterProfileId, petId, type, staffName, dateFrom, dateTo, pageable);
         
         List<CareLogResponseDto> dtos = careLogs.getContent().stream()
             .map(this::convertToResponseDto)
@@ -109,11 +109,11 @@ public class CareLogService {
         CareLog careLog = careLogRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Care log not found with id: " + id));
         
-        // Verify pet exists and belongs to the same shelter
+        // Verify pet exists and belongs to the same shelter profile
         Pet pet = petRepository.findById(requestDto.getPetId())
             .orElseThrow(() -> new RuntimeException("Pet not found with id: " + requestDto.getPetId()));
         
-        if (!pet.getShelter().getId().equals(careLog.getPet().getShelter().getId())) {
+        if (!pet.getShelterProfile().getId().equals(careLog.getPet().getShelterProfile().getId())) {
             throw new RuntimeException("Pet does not belong to the same shelter");
         }
         

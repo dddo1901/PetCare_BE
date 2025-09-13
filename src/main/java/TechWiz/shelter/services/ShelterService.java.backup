@@ -164,16 +164,16 @@ public class ShelterService {
         dto.setCreatedAt(shelter.getCreatedAt());
         dto.setUpdatedAt(shelter.getUpdatedAt());
         
-        // Add statistics
-        dto.setTotalPets(petRepository.countByShelterIdAndAdoptionStatus(
+        // Add statistics - using shelter profile ID equivalent
+        dto.setTotalPets(petRepository.countByShelterProfileIdAndAdoptionStatus(
             shelter.getId(), Pet.AdoptionStatus.AVAILABLE) +
-            petRepository.countByShelterIdAndAdoptionStatus(
+            petRepository.countByShelterProfileIdAndAdoptionStatus(
             shelter.getId(), Pet.AdoptionStatus.PENDING) +
-            petRepository.countByShelterIdAndAdoptionStatus(
+            petRepository.countByShelterProfileIdAndAdoptionStatus(
             shelter.getId(), Pet.AdoptionStatus.ADOPTED));
-        dto.setAvailablePets(petRepository.countByShelterIdAndAdoptionStatus(
+        dto.setAvailablePets(petRepository.countByShelterProfileIdAndAdoptionStatus(
             shelter.getId(), Pet.AdoptionStatus.AVAILABLE));
-        dto.setPendingInquiries(adoptionInquiryRepository.countByShelterIdAndStatus(
+        dto.setPendingInquiries(adoptionInquiryRepository.countByShelterProfileIdAndStatus(
             shelter.getId(), AdoptionInquiry.InquiryStatus.NEW));
         
         return dto;

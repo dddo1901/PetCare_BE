@@ -11,13 +11,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import TechWiz.shelter.dto.AdoptionInquiryRequestDto;
+import TechWiz.shelter.dto.AdoptionInquiryResponseDto;
+import TechWiz.shelter.dto.InquiryResponseRequestDto;
+import TechWiz.shelter.dto.ShelterBasicInfoDto;
 import TechWiz.shelter.models.AdoptionInquiry;
 import TechWiz.shelter.models.Pet;
-import TechWiz.shelter.models.Shelter;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
 import TechWiz.shelter.repositories.ShelterPetRepository;
-import TechWiz.shelter.repositories.ShelterRepository;
-import TechWiz.shelter.dto.*;
 
 @Service
 @Transactional
@@ -30,13 +31,7 @@ public class AdoptionInquiryService {
     private ShelterPetRepository petRepository;
     
     @Autowired
-    private ShelterRepository shelterRepository;
-    
-    @Autowired
     private ShelterPetService petService;
-    
-    @Autowired
-    private ShelterService shelterService;
     
     public AdoptionInquiryResponseDto createAdoptionInquiry(AdoptionInquiryRequestDto requestDto) {
         Pet pet = petRepository.findById(requestDto.getPetId())
@@ -55,7 +50,7 @@ public class AdoptionInquiryService {
         
         AdoptionInquiry inquiry = new AdoptionInquiry();
         inquiry.setPet(pet);
-        inquiry.setShelter(pet.getShelter());
+        inquiry.setShelterProfile(pet.getShelterProfile());
         inquiry.setAdopterName(requestDto.getAdopterName());
         inquiry.setAdopterEmail(requestDto.getAdopterEmail());
         inquiry.setAdopterPhone(requestDto.getAdopterPhone());
@@ -78,13 +73,13 @@ public class AdoptionInquiryService {
         return convertToResponseDto(inquiry);
     }
     
-    public Page<AdoptionInquiryResponseDto> getInquiriesByShelterId(Long shelterId,
+    public Page<AdoptionInquiryResponseDto> getInquiriesByShelterId(Long shelterProfileId,
                                                                    Long petId,
                                                                    AdoptionInquiry.InquiryStatus status,
                                                                    String adopterName,
                                                                    Pageable pageable) {
         Page<AdoptionInquiry> inquiries = adoptionInquiryRepository.findInquiriesWithFilters(
-            shelterId, petId, status, adopterName, pageable);
+            shelterProfileId, petId, status, adopterName, pageable);
         
         List<AdoptionInquiryResponseDto> dtos = inquiries.getContent().stream()
             .map(this::convertToResponseDto)
@@ -107,8 +102,8 @@ public class AdoptionInquiryService {
             .collect(Collectors.toList());
     }
     
-    public Long getInquiryCountByShelterIdAndStatus(Long shelterId, AdoptionInquiry.InquiryStatus status) {
-        return adoptionInquiryRepository.countByShelterIdAndStatus(shelterId, status);
+    public Long getInquiryCountByShelterIdAndStatus(Long shelterProfileId, AdoptionInquiry.InquiryStatus status) {
+        return adoptionInquiryRepository.countByShelterProfileIdAndStatus(shelterProfileId, status);
     }
     
     public AdoptionInquiryResponseDto respondToInquiry(Long id, InquiryResponseRequestDto responseDto) {
@@ -207,7 +202,16 @@ public class AdoptionInquiryService {
         
         // Set pet and shelter info
         dto.setPet(petService.convertToBasicInfoDto(inquiry.getPet()));
-        dto.setShelter(shelterService.convertToBasicInfoDto(inquiry.getShelter()));
+        // Convert shelter profile to basic info DTO manually
+        if (inquiry.getShelterProfile() != null) {
+            ShelterBasicInfoDto shelterInfo = new ShelterBasicInfoDto();
+            shelterInfo.setId(inquiry.getShelterProfile().getId());
+            shelterInfo.setShelterName(inquiry.getShelterProfile().getShelterName());
+            shelterInfo.setContactPersonName(inquiry.getShelterProfile().getContactPersonName());
+            shelterInfo.setAddress(inquiry.getShelterProfile().getAddress());
+            shelterInfo.setImageUrl(inquiry.getShelterProfile().getProfileImageUrl());
+            dto.setShelter(shelterInfo);
+        }
         
         return dto;
     }

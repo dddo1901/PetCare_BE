@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import TechWiz.shelter.models.Shelter;
+// import TechWiz.shelter.models.Shelter; // Removed - using ShelterProfile instead
 
 @Data
 @NoArgsConstructor
@@ -22,7 +22,8 @@ public class ShelterResponseDto {
     private String description;
     private String website;
     private String imageUrl;
-    private Shelter.ShelterStatus status;
+    // private Shelter.ShelterStatus status; // Removed - define enum locally if needed
+    private String status; // Using String instead of enum for now
     private Boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

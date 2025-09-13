@@ -11,13 +11,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import TechWiz.shelter.models.Pet;
-import TechWiz.shelter.models.Shelter;
+import TechWiz.auths.models.ShelterProfile;
+import TechWiz.auths.repositories.ShelterProfileRepository;
+import TechWiz.shelter.dto.PetBasicInfoDto;
+import TechWiz.shelter.dto.PetRequestDto;
+import TechWiz.shelter.dto.PetResponseDto;
+import TechWiz.shelter.dto.ShelterBasicInfoDto;
 import TechWiz.shelter.models.AdoptionInquiry;
-import TechWiz.shelter.repositories.ShelterPetRepository;
-import TechWiz.shelter.repositories.ShelterRepository;
+import TechWiz.shelter.models.Pet;
 import TechWiz.shelter.repositories.AdoptionInquiryRepository;
-import TechWiz.shelter.dto.*;
+import TechWiz.shelter.repositories.ShelterPetRepository;
 
 @Service
 @Transactional
@@ -27,21 +30,18 @@ public class ShelterPetService {
     private ShelterPetRepository petRepository;
     
     @Autowired
-    private ShelterRepository shelterRepository;
+    private ShelterProfileRepository shelterProfileRepository;
     
     @Autowired
     private AdoptionInquiryRepository adoptionInquiryRepository;
     
-    @Autowired
-    private ShelterService shelterService;
-    
-    public PetResponseDto createPet(Long shelterId, PetRequestDto requestDto) {
-        Shelter shelter = shelterRepository.findById(shelterId)
-            .orElseThrow(() -> new RuntimeException("Shelter not found with id: " + shelterId));
+    public PetResponseDto createPet(Long shelterProfileId, PetRequestDto requestDto) {
+        ShelterProfile shelterProfile = shelterProfileRepository.findById(shelterProfileId)
+            .orElseThrow(() -> new RuntimeException("Shelter profile not found with id: " + shelterProfileId));
         
         Pet pet = new Pet();
         mapRequestDtoToPet(requestDto, pet);
-        pet.setShelter(shelter);
+        pet.setShelterProfile(shelterProfile);
         
         Pet savedPet = petRepository.save(pet);
         return convertToResponseDto(savedPet);
@@ -53,7 +53,7 @@ public class ShelterPetService {
         return convertToResponseDto(pet);
     }
     
-    public Page<PetResponseDto> getPetsByShelterId(Long shelterId, 
+    public Page<PetResponseDto> getPetsByShelterId(Long shelterProfileId, 
                                                   String name, 
                                                   Pet.PetType type, 
                                                   String breed,
@@ -63,7 +63,7 @@ public class ShelterPetService {
                                                   Pet.Size size,
                                                   Pageable pageable) {
         Page<Pet> pets = petRepository.findPetsWithFilters(
-            shelterId, name, type, breed, adoptionStatus, healthStatus, gender, size, pageable);
+            shelterProfileId, name, type, breed, adoptionStatus, healthStatus, gender, size, pageable);
         
         List<PetResponseDto> dtos = pets.getContent().stream()
             .map(this::convertToResponseDto)
@@ -72,9 +72,9 @@ public class ShelterPetService {
         return new PageImpl<>(dtos, pageable, pets.getTotalElements());
     }
     
-    public List<PetResponseDto> getAvailablePetsByShelterId(Long shelterId) {
-        List<Pet> pets = petRepository.findByShelterIdAndAdoptionStatus(
-            shelterId, Pet.AdoptionStatus.AVAILABLE);
+    public List<PetResponseDto> getAvailablePetsByShelterId(Long shelterProfileId) {
+        List<Pet> pets = petRepository.findByShelterProfileIdAndAdoptionStatus(
+            shelterProfileId, Pet.AdoptionStatus.AVAILABLE);
         return pets.stream()
             .map(this::convertToResponseDto)
             .collect(Collectors.toList());
@@ -182,13 +182,25 @@ public class ShelterPetService {
         dto.setCreatedAt(pet.getCreatedAt());
         dto.setUpdatedAt(pet.getUpdatedAt());
         
-        // Set shelter info
-        dto.setShelter(shelterService.convertToBasicInfoDto(pet.getShelter()));
+        // Set shelter info from shelter profile
+        if (pet.getShelterProfile() != null) {
+            // Create a basic shelter info DTO from shelter profile
+            ShelterBasicInfoDto shelterInfo = new ShelterBasicInfoDto();
+            shelterInfo.setId(pet.getShelterProfile().getId());
+            shelterInfo.setShelterName(pet.getShelterProfile().getShelterName());
+            shelterInfo.setContactPersonName(pet.getShelterProfile().getContactPersonName());
+            shelterInfo.setAddress(pet.getShelterProfile().getAddress());
+            shelterInfo.setImageUrl(pet.getShelterProfile().getProfileImageUrl());
+            dto.setShelter(shelterInfo);
+        }
         
         // Add statistics
         dto.setTotalInquiries((long) pet.getAdoptionInquiries().size());
-        dto.setPendingInquiries(adoptionInquiryRepository.countByShelterIdAndStatus(
-            pet.getShelter().getId(), AdoptionInquiry.InquiryStatus.NEW));
+        // Count pending inquiries by shelter profile ID
+        if (pet.getShelterProfile() != null) {
+            dto.setPendingInquiries(adoptionInquiryRepository.countByShelterProfileIdAndStatus(
+                pet.getShelterProfile().getId(), AdoptionInquiry.InquiryStatus.NEW));
+        }
         
         return dto;
     }
@@ -204,22 +216,22 @@ public class ShelterPetService {
     }
     
     // Statistics methods for shelter dashboard
-    public Long getTotalPetsByShelter(Long shelterId) {
-        return petRepository.countByShelterId(shelterId);
+    public Long getTotalPetsByShelterProfile(Long shelterProfileId) {
+        return petRepository.countByShelterProfileId(shelterProfileId);
     }
     
-    public Long getPetCountByStatus(Long shelterId, Pet.AdoptionStatus status) {
-        return petRepository.countByShelterIdAndAdoptionStatus(shelterId, status);
+    public Long getPetCountByStatus(Long shelterProfileId, Pet.AdoptionStatus status) {
+        return petRepository.countByShelterProfileIdAndAdoptionStatus(shelterProfileId, status);
     }
     
-    public Long getTotalViewsByShelter(Long shelterId) {
-        return petRepository.findByShelterId(shelterId).stream()
+    public Long getTotalViewsByShelterProfile(Long shelterProfileId) {
+        return petRepository.findByShelterProfileId(shelterProfileId).stream()
             .mapToLong(pet -> 0L) // placeholder - would need views field in Pet model
             .sum();
     }
     
-    public Long getTotalApplicationsByShelter(Long shelterId) {
-        return adoptionInquiryRepository.countByShelterId(shelterId);
+    public Long getTotalApplicationsByShelterProfile(Long shelterProfileId) {
+        return adoptionInquiryRepository.countByShelterProfileId(shelterProfileId);
     }
     
     public void incrementPetViews(Long petId) {
