@@ -25,7 +25,7 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10)
     private BigDecimal price;
     
     @Column(nullable = false)
@@ -67,7 +67,7 @@ public class Product {
     private LocalDateTime updatedAt;
     
     // Product specifications (weight, dimensions, etc.)
-    @Column(name = "weight_kg", precision = 8, scale = 3)
+    @Column(name = "weight_kg", precision = 8)
     private BigDecimal weight;
     
     @Column(name = "dimensions_cm", length = 100)
