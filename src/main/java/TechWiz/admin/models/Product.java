@@ -39,7 +39,7 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10)
     private BigDecimal price;
     
     @Enumerated(EnumType.STRING)

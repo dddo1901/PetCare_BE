@@ -1,0 +1,77 @@
+package TechWiz.petOwner.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
+public class PetOwnerPetRequest {
+
+    @NotBlank(message = "Pet name is required")
+    @Size(min = 2, max = 100, message = "Pet name must be between 2 and 100 characters")
+    private String name;
+
+    @NotNull(message = "Pet type is required")
+    @Pattern(regexp = "^(DOG|CAT|BIRD|FISH|RABBIT|HAMSTER|REPTILE|OTHER)$", 
+             message = "Pet type must be one of: DOG, CAT, BIRD, FISH, RABBIT, HAMSTER, REPTILE, OTHER")
+    private String type;
+
+    @NotBlank(message = "Breed is required")
+    @Size(min = 2, max = 100, message = "Breed must be between 2 and 100 characters")
+    private String breed;
+
+    @NotNull(message = "Age is required")
+    @Min(value = 1, message = "Age must be at least 1 month")
+    @Max(value = 300, message = "Age must not exceed 300 months (25 years)")
+    private Integer ageInMonths;
+
+    @NotNull(message = "Gender is required")
+    @Pattern(regexp = "^(MALE|FEMALE)$", message = "Gender must be MALE or FEMALE")
+    private String gender;
+
+    // Optional fields with validation
+    @Size(max = 50, message = "Color must not exceed 50 characters")
+    private String color;
+
+    @DecimalMin(value = "0.1", message = "Weight must be at least 0.1")
+    @DecimalMax(value = "1000.0", message = "Weight must not exceed 1000")
+    private BigDecimal weight;
+
+    @Size(max = 100, message = "Microchip must not exceed 100 characters")
+    private String microchip;
+    
+    private String imageUrl;
+
+    @Size(max = 2000, message = "Photos JSON must not exceed 2000 characters")
+    private String photos; // JSON array of photo URLs
+
+    @Size(max = 1000, message = "Description must not exceed 1000 characters")
+    private String description;
+
+    @Pattern(regexp = "^(HEALTHY|NEEDS_MONITORING|SICK|RECOVERING)$", 
+             message = "Health status must be one of: HEALTHY, NEEDS_MONITORING, SICK, RECOVERING")
+    private String healthStatus = "HEALTHY";
+
+    private Boolean vaccinated = false;
+    private Boolean spayedNeutered = false;
+    private Boolean microchipped = false;
+    private Boolean houseTrained = false;
+
+    // Additional fields
+    private Boolean goodWithKids = false;
+    private Boolean goodWithPets = false;
+
+    @Pattern(regexp = "^(LOW|MEDIUM|HIGH|VERY_HIGH)$", 
+             message = "Energy level must be one of: LOW, MEDIUM, HIGH, VERY_HIGH")
+    private String energyLevel = "MEDIUM";
+
+    @Size(max = 1000, message = "Special needs must not exceed 1000 characters")
+    private String specialNeeds;
+
+    @Size(max = 1000, message = "Personality must not exceed 1000 characters")
+    private String personality;
+
+    @Size(max = 1000, message = "Requirements must not exceed 1000 characters")
+    private String requirements;
+}

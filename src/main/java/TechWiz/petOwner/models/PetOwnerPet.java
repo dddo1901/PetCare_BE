@@ -1,34 +1,18 @@
-package TechWiz.shelter.models;
+package TechWiz.petOwner.models;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import TechWiz.auths.models.ShelterProfile;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-@Entity(name = "ShelterPet")
-@Table(name = "shelter_pets")
+@Entity
+@Table(name = "pet_owner_pets")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShelterPet {
+public class PetOwnerPet {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,25 +35,23 @@ public class ShelterPet {
     @Column(nullable = false)
     private Gender gender;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Size size;
-    
     @Column(length = 50)
     private String color;
     
     @Column(precision = 5)
     private BigDecimal weight;
     
-    @Column(length = 500)
+    @Column(length = 100)
+    private String microchip;
+    
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
     
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "photos", columnDefinition = "LONGTEXT")
+    private String photos; // JSON array of photo URLs
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AdoptionStatus adoptionStatus = AdoptionStatus.AVAILABLE;
+    @Column(columnDefinition = "LONGTEXT")
+    private String description;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -97,11 +79,8 @@ public class ShelterPet {
     @Column(nullable = false)
     private EnergyLevel energyLevel = EnergyLevel.MEDIUM;
     
-    @Column(length = 500)
+    @Column(columnDefinition = "LONGTEXT")
     private String specialNeeds;
-    
-    @Column(precision = 10)
-    private BigDecimal adoptionFee;
     
     @Column(length = 1000)
     private String personality;
@@ -115,14 +94,8 @@ public class ShelterPet {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
-    // Relationship with shelter profile
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shelter_profile_id", nullable = false)
-    private ShelterProfile shelterProfile;
-    
-    // Relationship with adoption inquiries
-    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AdoptionInquiry> adoptionInquiries = new java.util.ArrayList<>();
+    @Column(nullable = false)
+    private Long ownerId;
     
     @PreUpdate
     protected void onUpdate() {
@@ -130,26 +103,73 @@ public class ShelterPet {
     }
     
     public enum PetType {
-        DOG, CAT, BIRD, RABBIT, OTHER
+        DOG("Dog"),
+        CAT("Cat"),
+        BIRD("Bird"),
+        FISH("Fish"),
+        RABBIT("Rabbit"),
+        HAMSTER("Hamster"),
+        REPTILE("Reptile"),
+        OTHER("Other");
+        
+        private final String displayName;
+        
+        PetType(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     public enum Gender {
-        MALE, FEMALE
-    }
-    
-    public enum Size {
-        SMALL, MEDIUM, LARGE, EXTRA_LARGE
-    }
-    
-    public enum AdoptionStatus {
-        AVAILABLE, PENDING, ADOPTED, UNAVAILABLE
+        MALE("Male"),
+        FEMALE("Female");
+        
+        private final String displayName;
+        
+        Gender(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     public enum HealthStatus {
-        HEALTHY, NEEDS_MONITORING, SICK, RECOVERING
+        HEALTHY("Healthy"),
+        NEEDS_MONITORING("Needs Monitoring"),
+        SICK("Sick"),
+        RECOVERING("Recovering");
+        
+        private final String displayName;
+        
+        HealthStatus(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     public enum EnergyLevel {
-        LOW, MEDIUM, HIGH, VERY_HIGH
+        LOW("Low"),
+        MEDIUM("Medium"),
+        HIGH("High"),
+        VERY_HIGH("Very High");
+        
+        private final String displayName;
+        
+        EnergyLevel(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 }
+
