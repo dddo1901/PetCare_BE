@@ -3,13 +3,20 @@ package TechWiz.petOwner.services;
 import TechWiz.petOwner.dto.PetOwnerAppointmentRequest;
 import TechWiz.petOwner.dto.PetOwnerAppointmentResponse;
 import TechWiz.petOwner.models.PetOwnerAppointment;
+import TechWiz.petOwner.models.PetOwnerPet;
 import TechWiz.petOwner.repositories.PetOwnerAppointmentRepository;
 import TechWiz.petOwner.repositories.PetOwnerPetRepository;
 import TechWiz.auths.services.VeterinarianService;
 import TechWiz.auths.models.dto.VeterinarianResponse;
 import TechWiz.auths.models.User;
 import TechWiz.auths.repositories.UserRepository;
+import TechWiz.veterinarian.services.EmailService;
+import TechWiz.veterinarian.repositories.VeterinarianProfileRepository;
+import TechWiz.auths.models.VeterinarianProfile;
+import TechWiz.petOwner.services.PetOwnerHealthRecordService;
+import TechWiz.petOwner.models.PetOwnerHealthRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +40,22 @@ public class PetOwnerAppointmentService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    @Qualifier("veterinarianEmailService")
+    private EmailService emailService;
+    
+    @Autowired
+    private VeterinarianProfileRepository veterinarianProfileRepository;
+    
+    @Autowired
+    private PetOwnerHealthRecordService healthRecordService;
+    
     public PetOwnerAppointmentResponse createAppointment(PetOwnerAppointmentRequest request, Long ownerId) {
+        // Check for appointment conflicts before creating
+        if (hasAppointmentConflict(request.getVetId(), request.getAppointmentDateTime())) {
+            throw new RuntimeException("Veterinarian already has a confirmed appointment at this time. Please choose a different time slot.");
+        }
+        
         PetOwnerAppointment appointment = new PetOwnerAppointment();
         appointment.setOwnerId(ownerId);
         appointment.setPetId(request.getPetId());
@@ -45,6 +67,10 @@ public class PetOwnerAppointmentService {
         appointment.setStatus(PetOwnerAppointment.AppointmentStatus.PENDING);
         
         PetOwnerAppointment savedAppointment = appointmentRepository.save(appointment);
+        
+        // Send email notification to vet
+        sendNewAppointmentEmailToVet(savedAppointment);
+        
         return convertToResponse(savedAppointment);
     }
     
@@ -110,7 +136,7 @@ public class PetOwnerAppointmentService {
         Map<String, Object> result = new HashMap<>();
         
         // Check for existing appointments at the same time
-        List<PetOwnerAppointment> sameTimeAppointments = appointmentRepository.findByVetIdAndAppointmentDateTime(vetId, appointmentDateTime);
+        // List<PetOwnerAppointment> sameTimeAppointments = appointmentRepository.findByVetIdAndAppointmentDateTime(vetId, appointmentDateTime);
         
         // Check for appointments within 1 hour before and after
         LocalDateTime oneHourBefore = appointmentDateTime.minusHours(1);
@@ -335,6 +361,98 @@ public class PetOwnerAppointmentService {
             } else {
                 return years + "y " + months + "m";
             }
+        }
+    }
+    
+    // Send email notification to vet when new appointment is created
+    private void sendNewAppointmentEmailToVet(PetOwnerAppointment appointment) {
+        try {
+            // Get vet profile and user info
+            Optional<VeterinarianProfile> vetProfileOpt = veterinarianProfileRepository.findById(appointment.getVetId());
+            if (!vetProfileOpt.isPresent()) {
+                System.err.println("Vet profile not found for vetId: " + appointment.getVetId());
+                return;
+            }
+            
+            VeterinarianProfile vetProfile = vetProfileOpt.get();
+            User vetUser = vetProfile.getUser();
+            
+            // Get pet info
+            Optional<PetOwnerPet> petOpt = petRepository.findById(appointment.getPetId());
+            if (!petOpt.isPresent()) {
+                System.err.println("Pet not found for petId: " + appointment.getPetId());
+                return;
+            }
+            
+            PetOwnerPet pet = petOpt.get();
+            
+            // Get owner info
+            Optional<User> ownerOpt = userRepository.findById(appointment.getOwnerId());
+            if (!ownerOpt.isPresent()) {
+                System.err.println("Owner not found for ownerId: " + appointment.getOwnerId());
+                return;
+            }
+            
+            User owner = ownerOpt.get();
+            
+            // Get pet's health records
+            List<PetOwnerHealthRecord> healthRecords = healthRecordService.getHealthRecordsByPet(appointment.getPetId(), appointment.getOwnerId());
+            
+            // Format appointment date and time
+            String appointmentDate = appointment.getAppointmentDateTime().toLocalDate().toString();
+            String appointmentTime = appointment.getAppointmentDateTime().toLocalTime().toString();
+            String location = vetProfile.getClinicAddress() != null ? vetProfile.getClinicAddress() : "Veterinary Clinic";
+            
+            // Send email to vet with health records
+            emailService.sendNewAppointmentNotificationToVetWithHealthRecords(
+                vetUser.getEmail(),
+                vetUser.getFullName(),
+                owner.getFullName(),
+                pet.getName(),
+                appointment.getType(),
+                appointmentDate,
+                appointmentTime,
+                location,
+                appointment.getReason(),
+                healthRecords
+            );
+            
+            System.out.println("New appointment email with health records sent to vet: " + vetUser.getEmail());
+            
+        } catch (Exception e) {
+            System.err.println("Error sending new appointment email to vet: " + e.getMessage());
+        }
+    }
+    
+    // Check if there's a conflict with existing appointments
+    private boolean hasAppointmentConflict(Long vetId, LocalDateTime appointmentDateTime) {
+        try {
+            // Get all confirmed appointments for this vet at the same time
+            List<PetOwnerAppointment> existingAppointments = appointmentRepository.findByVetIdAndAppointmentDateTimeAndStatus(
+                vetId, 
+                appointmentDateTime, 
+                PetOwnerAppointment.AppointmentStatus.CONFIRMED
+            );
+            
+            // Also check for appointments within 30 minutes (to prevent overlapping)
+            LocalDateTime startTime = appointmentDateTime.minusMinutes(30);
+            LocalDateTime endTime = appointmentDateTime.plusMinutes(30);
+            
+            List<PetOwnerAppointment> overlappingAppointments = appointmentRepository.findByVetIdAndAppointmentDateTimeBetweenAndStatus(
+                vetId,
+                startTime,
+                endTime,
+                PetOwnerAppointment.AppointmentStatus.CONFIRMED
+            );
+            
+            // Return true if there are any conflicts
+            return !existingAppointments.isEmpty() || !overlappingAppointments.isEmpty();
+            
+        } catch (Exception e) {
+            System.err.println("Error checking appointment conflicts: " + e.getMessage());
+            // If there's an error checking conflicts, allow the appointment to be created
+            // This prevents blocking appointments due to technical issues
+            return false;
         }
     }
 }

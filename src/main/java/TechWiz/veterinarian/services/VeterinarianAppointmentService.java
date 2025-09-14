@@ -17,7 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -444,4 +446,32 @@ public class VeterinarianAppointmentService {
             System.err.println("Error sending notification/email: " + e.getMessage());
         }
     }
+
+    public List<VeterinarianAppointmentResponse> getAppointmentsByVetAndDate(Long vetId, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<PetOwnerAppointment> appointments =
+                appointmentRepository.findByVetIdAndAppointmentDateTimeBetween(vetId, startOfDay, endOfDay);
+
+        return appointments.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private VeterinarianAppointmentResponse mapToResponse(PetOwnerAppointment entity) {
+        VeterinarianAppointmentResponse dto = new VeterinarianAppointmentResponse();
+        dto.setId(entity.getId());
+        dto.setPetId(entity.getPetId());
+        dto.setVetId(entity.getVetId());
+        dto.setOwnerId(entity.getOwnerId());
+        dto.setStatus(entity.getStatus().name());
+        dto.setType(entity.getType());
+        dto.setReason(entity.getReason());
+        dto.setAppointmentDateTime(entity.getAppointmentDateTime());
+        dto.setVetNotes(entity.getVetNotes());
+        dto.setOwnerNotes(entity.getOwnerNotes());
+        return dto;
+    }
+
 }

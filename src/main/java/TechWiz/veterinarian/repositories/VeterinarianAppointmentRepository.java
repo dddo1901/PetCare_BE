@@ -1,6 +1,7 @@
 package TechWiz.veterinarian.repositories;
 
 import TechWiz.petOwner.models.PetOwnerAppointment;
+import TechWiz.veterinarian.dto.VeterinarianAppointmentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,4 +53,6 @@ public interface VeterinarianAppointmentRepository extends JpaRepository<PetOwne
     // Find appointments in date range
     @Query("SELECT a FROM PetOwnerAppointment a WHERE a.vetId = :vetId AND a.appointmentDateTime BETWEEN :startDate AND :endDate ORDER BY a.appointmentDateTime ASC")
     List<PetOwnerAppointment> findAppointmentsInDateRange(@Param("vetId") Long vetId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    List<PetOwnerAppointment> findByVetIdAndAppointmentDateTimeBetween(Long vetId, LocalDateTime appointmentDateTimeAfter, LocalDateTime appointmentDateTimeBefore);
 }
