@@ -59,4 +59,10 @@ public interface PetOwnerAppointmentRepository extends JpaRepository<PetOwnerApp
     // Find top 5 appointments by owner ID ordered by appointment date
     @Query("SELECT a FROM PetOwnerAppointment a WHERE a.ownerId = :ownerId ORDER BY a.appointmentDateTime DESC")
     List<PetOwnerAppointment> findTop5ByOwnerIdOrderByAppointmentDateTimeDesc(@Param("ownerId") Long ownerId);
+    
+    // Find appointments by vet ID, exact appointment time, and status
+    List<PetOwnerAppointment> findByVetIdAndAppointmentDateTimeAndStatus(Long vetId, LocalDateTime appointmentDateTime, PetOwnerAppointment.AppointmentStatus status);
+    
+    // Find appointments by vet ID, appointment time range, and status
+    List<PetOwnerAppointment> findByVetIdAndAppointmentDateTimeBetweenAndStatus(Long vetId, LocalDateTime start, LocalDateTime end, PetOwnerAppointment.AppointmentStatus status);
 }
