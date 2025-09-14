@@ -62,9 +62,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @Transactional
     void deleteByUserId(Long userId);
     
-    // Find cart items for products that are out of stock or inactive
+    // Find cart items for products that are inactive or unavailable
     @Query("SELECT c FROM CartItem c JOIN c.product p WHERE " +
-           "(p.stockQuantity = 0 OR p.isActive = false OR p.isAvailable = false) " +
+           "(p.isActive = false OR p.isAvailable = false) " +
            "AND c.userId = :userId")
     List<CartItem> findUnavailableCartItems(@Param("userId") Long userId);
 }

@@ -9,20 +9,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import TechWiz.shelter.models.Pet;
+import TechWiz.shelter.models.ShelterPet;
 
 @Repository
-public interface ShelterPetRepository extends JpaRepository<Pet, Long> {
+public interface ShelterPetRepository extends JpaRepository<ShelterPet, Long> {
     
-    List<Pet> findByShelterId(Long shelterId);
+    List<ShelterPet> findByShelterProfileId(Long shelterProfileId);
     
-    Page<Pet> findByShelterId(Long shelterId, Pageable pageable);
+    List<ShelterPet> findByShelterProfileIdOrderByCreatedAtDesc(Long shelterProfileId);
     
-    List<Pet> findByAdoptionStatus(Pet.AdoptionStatus adoptionStatus);
+    Page<ShelterPet> findByShelterProfileId(Long shelterProfileId, Pageable pageable);
     
-    List<Pet> findByShelterIdAndAdoptionStatus(Long shelterId, Pet.AdoptionStatus adoptionStatus);
+    List<ShelterPet> findByAdoptionStatus(ShelterPet.AdoptionStatus adoptionStatus);
     
-    @Query("SELECT p FROM ShelterPet p WHERE p.shelter.id = :shelterId AND " +
+    List<ShelterPet> findByShelterProfileIdAndAdoptionStatus(Long shelterProfileId, ShelterPet.AdoptionStatus adoptionStatus);
+    
+    Long countByShelterProfileId(Long shelterProfileId);
+    
+    @Query("SELECT p FROM ShelterPet p WHERE p.shelterProfile.id = :shelterProfileId AND " +
            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:type IS NULL OR p.type = :type) AND " +
            "(:breed IS NULL OR LOWER(p.breed) LIKE LOWER(CONCAT('%', :breed, '%'))) AND " +
@@ -30,28 +34,28 @@ public interface ShelterPetRepository extends JpaRepository<Pet, Long> {
            "(:healthStatus IS NULL OR p.healthStatus = :healthStatus) AND " +
            "(:gender IS NULL OR p.gender = :gender) AND " +
            "(:size IS NULL OR p.size = :size)")
-    Page<Pet> findPetsWithFilters(@Param("shelterId") Long shelterId,
+    Page<ShelterPet> findPetsWithFilters(@Param("shelterProfileId") Long shelterProfileId,
                                  @Param("name") String name,
-                                 @Param("type") Pet.PetType type,
+                                 @Param("type") ShelterPet.PetType type,
                                  @Param("breed") String breed,
-                                 @Param("adoptionStatus") Pet.AdoptionStatus adoptionStatus,
-                                 @Param("healthStatus") Pet.HealthStatus healthStatus,
-                                 @Param("gender") Pet.Gender gender,
-                                 @Param("size") Pet.Size size,
+                                 @Param("adoptionStatus") ShelterPet.AdoptionStatus adoptionStatus,
+                                 @Param("healthStatus") ShelterPet.HealthStatus healthStatus,
+                                 @Param("gender") ShelterPet.Gender gender,
+                                 @Param("size") ShelterPet.Size size,
                                  Pageable pageable);
     
-    @Query("SELECT COUNT(p) FROM ShelterPet p WHERE p.shelter.id = :shelterId AND p.adoptionStatus = :status")
-    Long countByShelterIdAndAdoptionStatus(@Param("shelterId") Long shelterId, 
-                                          @Param("status") Pet.AdoptionStatus status);
+    @Query("SELECT COUNT(p) FROM ShelterPet p WHERE p.shelterProfile.id = :shelterProfileId AND p.adoptionStatus = :status")
+    Long countByShelterProfileIdAndAdoptionStatus(@Param("shelterProfileId") Long shelterProfileId, 
+                                                @Param("status") ShelterPet.AdoptionStatus status);
     
     @Query("SELECT p FROM ShelterPet p WHERE p.adoptionStatus = 'AVAILABLE' AND " +
            "(:type IS NULL OR p.type = :type) AND " +
            "(:breed IS NULL OR LOWER(p.breed) LIKE LOWER(CONCAT('%', :breed, '%'))) AND " +
            "(:gender IS NULL OR p.gender = :gender) AND " +
            "(:size IS NULL OR p.size = :size)")
-    Page<Pet> findAvailablePetsWithFilters(@Param("type") Pet.PetType type,
+    Page<ShelterPet> findAvailablePetsWithFilters(@Param("type") ShelterPet.PetType type,
                                           @Param("breed") String breed,
-                                          @Param("gender") Pet.Gender gender,
-                                          @Param("size") Pet.Size size,
+                                          @Param("gender") ShelterPet.Gender gender,
+                                          @Param("size") ShelterPet.Size size,
                                           Pageable pageable);
 }

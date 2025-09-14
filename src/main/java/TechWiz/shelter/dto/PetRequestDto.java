@@ -1,18 +1,15 @@
 package TechWiz.shelter.dto;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import TechWiz.shelter.models.ShelterPet;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-
-import TechWiz.shelter.models.Pet;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -24,7 +21,7 @@ public class PetRequestDto {
     private String name;
     
     @NotNull(message = "Pet type is required")
-    private Pet.PetType type;
+    private ShelterPet.PetType type;
     
     @NotBlank(message = "Breed is required")
     @Size(max = 100, message = "Breed must not exceed 100 characters")
@@ -35,10 +32,10 @@ public class PetRequestDto {
     private Integer ageInMonths;
     
     @NotNull(message = "Gender is required")
-    private Pet.Gender gender;
+    private ShelterPet.Gender gender;
     
     @NotNull(message = "Size is required")
-    private Pet.Size size;
+    private ShelterPet.Size size;
     
     @Size(max = 50, message = "Color must not exceed 50 characters")
     private String color;
@@ -51,15 +48,15 @@ public class PetRequestDto {
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
     
-    private Pet.AdoptionStatus adoptionStatus;
-    private Pet.HealthStatus healthStatus;
+    private ShelterPet.AdoptionStatus adoptionStatus;
+    private ShelterPet.HealthStatus healthStatus;
     private Boolean vaccinated;
     private Boolean spayedNeutered;
     private Boolean microchipped;
     private Boolean houseTrained;
     private Boolean goodWithKids;
     private Boolean goodWithPets;
-    private Pet.EnergyLevel energyLevel;
+    private ShelterPet.EnergyLevel energyLevel;
     
     @Size(max = 500, message = "Special needs must not exceed 500 characters")
     private String specialNeeds;

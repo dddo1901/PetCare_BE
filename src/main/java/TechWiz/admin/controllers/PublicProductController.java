@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import TechWiz.admin.models.Product;
 import TechWiz.admin.models.ProductCategory;
-import TechWiz.admin.models.PetType;
 import TechWiz.admin.services.ProductService;
 import TechWiz.auths.models.dto.ApiResponse;
 
@@ -62,33 +65,15 @@ public class PublicProductController {
         }
     }
 
-    @GetMapping("/pet-type/{petType}")
-    public ResponseEntity<?> getProductsByPetType(@PathVariable PetType petType,
-                                                @RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "12") int size) {
-        try {
-            Page<Product> products = productService.getProductsByPetType(petType, page, size);
-            return ResponseEntity.ok(new ApiResponse(true, "Products by pet type retrieved", products));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error retrieving products: " + e.getMessage()));
-        }
-    }
-
     @GetMapping("/filter")
     public ResponseEntity<?> getFilteredProducts(@RequestParam(required = false) ProductCategory category,
-                                                @RequestParam(required = false) PetType petType,
                                                 @RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "12") int size) {
         try {
             Page<Product> products;
             
-            if (category != null && petType != null) {
-                products = productService.getProductsByCategoryAndPetType(category, petType, page, size);
-            } else if (category != null) {
+            if (category != null) {
                 products = productService.getProductsByCategory(category, page, size);
-            } else if (petType != null) {
-                products = productService.getProductsByPetType(petType, page, size);
             } else {
                 products = productService.getActiveProducts(page, size);
             }
@@ -122,17 +107,6 @@ public class PublicProductController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error retrieving categories: " + e.getMessage()));
-        }
-    }
-
-    @GetMapping("/pet-types")
-    public ResponseEntity<?> getPetTypes() {
-        try {
-            PetType[] petTypes = PetType.values();
-            return ResponseEntity.ok(new ApiResponse(true, "Pet types retrieved", petTypes));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "Error retrieving pet types: " + e.getMessage()));
         }
     }
 }

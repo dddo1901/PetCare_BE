@@ -45,6 +45,7 @@ public class ProfileService {
         response.setEmail(user.getEmail());
         response.setFullName(user.getFullName());
         response.setPhoneNumber(user.getPhoneNumber());
+        response.setProfileImageUrl(user.getProfileImageUrl()); // Add avatar from User model
         response.setRole(user.getRole());
         response.setIsActive(user.getIsActive());
         response.setIsEmailVerified(user.getIsEmailVerified());
@@ -85,7 +86,7 @@ public class ProfileService {
             profile.getAddress(),
             profile.getEmergencyContactName(),
             profile.getEmergencyContactPhone(),
-            profile.getProfileImageUrl(),
+            user.getProfileImageUrl(),
             profile.getBio(),
             profile.getAllowAccountSharing(),
             profile.getCreatedAt(),
@@ -112,7 +113,7 @@ public class ProfileService {
             profile.getAvailableFromTime(),
             profile.getAvailableToTime(),
             profile.getAvailableDaysList(),
-            profile.getProfileImageUrl(),
+            user.getProfileImageUrl(),
             profile.getBio(),
             profile.getConsultationFee(),
             profile.getIsAvailableForEmergency(),
@@ -140,7 +141,7 @@ public class ProfileService {
             profile.getDescription(),
             profile.getCapacity(),
             profile.getCurrentOccupancy(),
-            profile.getProfileImageUrl(),
+            user.getProfileImageUrl(),
             profile.getImages(),
             profile.getIsVerified(),
             profile.getAcceptsDonations(),
@@ -178,7 +179,10 @@ public class ProfileService {
         if (request.getAddress() != null) profile.setAddress(request.getAddress());
         if (request.getEmergencyContactName() != null) profile.setEmergencyContactName(request.getEmergencyContactName());
         if (request.getEmergencyContactPhone() != null) profile.setEmergencyContactPhone(request.getEmergencyContactPhone());
-        if (request.getProfileImageUrl() != null) profile.setProfileImageUrl(request.getProfileImageUrl());
+        if (request.getProfileImageUrl() != null) {
+            user.setProfileImageUrl(request.getProfileImageUrl());
+            userRepository.save(user);
+        }
         if (request.getBio() != null) profile.setBio(request.getBio());
         if (request.getAllowAccountSharing() != null) profile.setAllowAccountSharing(request.getAllowAccountSharing());
 
@@ -223,7 +227,10 @@ public class ProfileService {
         if (request.getAvailableFromTime() != null) profile.setAvailableFromTime(request.getAvailableFromTime());
         if (request.getAvailableToTime() != null) profile.setAvailableToTime(request.getAvailableToTime());
         if (request.getAvailableDays() != null) profile.setAvailableDaysList(request.getAvailableDays());
-        if (request.getProfileImageUrl() != null) profile.setProfileImageUrl(request.getProfileImageUrl());
+        if (request.getProfileImageUrl() != null) {
+            user.setProfileImageUrl(request.getProfileImageUrl());
+            userRepository.save(user);
+        }
         if (request.getBio() != null) profile.setBio(request.getBio());
         if (request.getConsultationFee() != null) profile.setConsultationFee(request.getConsultationFee());
         if (request.getIsAvailableForEmergency() != null) profile.setIsAvailableForEmergency(request.getIsAvailableForEmergency());
@@ -276,7 +283,10 @@ public class ProfileService {
         if (request.getImages() != null) profile.setImages(request.getImages());
         if (request.getAcceptsDonations() != null) profile.setAcceptsDonations(request.getAcceptsDonations());
         if (request.getOperatingHours() != null) profile.setOperatingHours(request.getOperatingHours());
-        if (request.getProfileImageUrl() != null) profile.setProfileImageUrl(request.getProfileImageUrl());
+        if (request.getProfileImageUrl() != null) {
+            user.setProfileImageUrl(request.getProfileImageUrl());
+            userRepository.save(user);
+        }
 
         shelterProfileRepository.save(profile);
 
@@ -405,7 +415,7 @@ public class ProfileService {
         data.setDescription(profile.getDescription());
         data.setCapacity(profile.getCapacity());
         data.setCurrentOccupancy(profile.getCurrentOccupancy());
-        data.setProfileImageUrl(profile.getProfileImageUrl());
+        data.setProfileImageUrl(user.getProfileImageUrl());
         data.setImages(profile.getImages());
         data.setIsVerified(profile.getIsVerified());
         data.setAcceptsDonations(profile.getAcceptsDonations());

@@ -96,12 +96,16 @@ public class ProfileController {
 
     @GetMapping("/shelter")
     public ResponseEntity<ApiResponse> getShelterProfile(@AuthenticationPrincipal String email) {
+        System.out.println("DEBUG: getShelterProfile called for email: " + email);
+        
         UserProfileResponse.ShelterProfileData profile = 
                 profileService.getShelterProfile(email);
         
         if (profile != null) {
+            System.out.println("DEBUG: Shelter profile found with ID: " + profile.getProfileId());
             return ResponseEntity.ok(ApiResponse.success("Shelter profile retrieved", profile));
         } else {
+            System.out.println("DEBUG: No shelter profile found for email: " + email);
             return ResponseEntity.badRequest().body(ApiResponse.error("Failed to get shelter profile"));
         }
     }

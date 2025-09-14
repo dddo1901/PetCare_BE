@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import TechWiz.admin.models.CartItem;
 import TechWiz.admin.models.Product;
-import TechWiz.admin.repositories.CartItemRepository;
-import TechWiz.admin.repositories.ProductRepository;
 import TechWiz.admin.models.dto.AddToCartRequest;
 import TechWiz.admin.models.dto.CartItemResponse;
+import TechWiz.admin.repositories.CartItemRepository;
+import TechWiz.admin.repositories.ProductRepository;
 
 @Service
 @Transactional
@@ -38,20 +38,12 @@ public class CartService {
             return "Product is not available";
         }
 
-        if (product.getStockQuantity() < request.getQuantity()) {
-            return "Insufficient stock. Available: " + product.getStockQuantity();
-        }
-
         // Check if item already exists in cart
         CartItem existingItem = cartItemRepository.findByUserIdAndProductId(userId, request.getProductId());
         
         if (existingItem != null) {
             // Update existing cart item
             int newQuantity = existingItem.getQuantity() + request.getQuantity();
-            if (product.getStockQuantity() < newQuantity) {
-                return "Cannot add more items. Stock limit: " + product.getStockQuantity() + 
-                       ", Current in cart: " + existingItem.getQuantity();
-            }
             
             existingItem.setQuantity(newQuantity);
             existingItem.setUpdatedAt(LocalDateTime.now());
@@ -81,15 +73,10 @@ public class CartService {
             return "Item not found in cart";
         }
 
-        // Check stock availability
+        // Check product availability
         Optional<Product> productOpt = productRepository.findById(productId);
         if (productOpt.isEmpty() || !productOpt.get().getIsActive() || !productOpt.get().getIsAvailable()) {
             return "Product is no longer available";
-        }
-
-        Product product = productOpt.get();
-        if (product.getStockQuantity() < quantity) {
-            return "Insufficient stock. Available: " + product.getStockQuantity();
         }
 
         cartItem.setQuantity(quantity);
@@ -145,11 +132,6 @@ public class CartService {
             if (!product.getIsActive() || !product.getIsAvailable()) {
                 return "Product '" + product.getName() + "' is no longer available";
             }
-            
-            if (product.getStockQuantity() < item.getQuantity()) {
-                return "Insufficient stock for '" + product.getName() + "'. Available: " + product.getStockQuantity() + 
-                       ", Requested: " + item.getQuantity();
-            }
         }
         
         return "Cart is valid";
@@ -166,23 +148,12 @@ public class CartService {
         return removedItems;
     }
 
-    // For order processing - reduce stock after successful payment
+    // For order processing - no stock reduction needed with simplified model  
     public boolean processCartForOrder(Long userId) {
-        List<CartItem> cartItems = cartItemRepository.findByUserIdOrderByAddedAtDesc(userId);
-        
-        // First validate all items
+        // First validate all items are still available
         String validation = validateCart(userId);
         if (!"Cart is valid".equals(validation)) {
             return false;
-        }
-
-        // Reduce stock for all items
-        for (CartItem item : cartItems) {
-            Product product = item.getProduct();
-            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-            product.setIsAvailable(product.getStockQuantity() > 0);
-            product.setUpdatedAt(LocalDateTime.now());
-            productRepository.save(product);
         }
 
         // Clear the cart after successful order
@@ -198,7 +169,6 @@ public class CartService {
         response.setProductImage(cartItem.getProduct().getImageUrl());
         response.setPrice(cartItem.getProduct().getPrice());
         response.setQuantity(cartItem.getQuantity());
-        response.setAvailableStock(cartItem.getProduct().getStockQuantity());
         response.setSubtotal(cartItem.getProduct().getPrice().multiply(java.math.BigDecimal.valueOf(cartItem.getQuantity())));
         response.setAddedAt(cartItem.getAddedAt());
         response.setIsAvailable(cartItem.getProduct().getIsActive() && cartItem.getProduct().getIsAvailable());

@@ -1,13 +1,13 @@
 package TechWiz.auths.models.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import TechWiz.auths.models.Role;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+
+import TechWiz.auths.models.Role;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +18,7 @@ public class UserProfileResponse {
     private String email;
     private String fullName;
     private String phoneNumber;
+    private String profileImageUrl; // Avatar from users table
     private Role role;
     private Boolean isActive;
     private Boolean isEmailVerified;
