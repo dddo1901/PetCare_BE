@@ -28,6 +28,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "ORDER BY p.createdAt DESC")
     Page<Product> searchActiveProducts(@Param("keyword") String keyword, Pageable pageable);
     
+    // Search products by keyword within specific category (active only)
+    @Query("SELECT p FROM Product p WHERE (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "p.category = :category AND p.isActive = true AND p.isAvailable = true " +
+           "ORDER BY p.createdAt DESC")
+    Page<Product> searchActiveProductsInCategory(@Param("keyword") String keyword, @Param("category") ProductCategory category, Pageable pageable);
+    
     // Admin queries - all products including inactive
     Page<Product> findAllByOrderByCreatedAtDesc(Pageable pageable);
     

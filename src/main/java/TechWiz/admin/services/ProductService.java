@@ -138,4 +138,9 @@ public class ProductService {
                product.get().getIsActive() && 
                product.get().getIsAvailable();
     }
+    
+    public Page<Product> searchProductsInCategory(String keyword, ProductCategory category, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.searchActiveProductsInCategory(keyword, category, pageable);
+    }
 }

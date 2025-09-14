@@ -18,7 +18,7 @@ import TechWiz.admin.services.ProductService;
 import TechWiz.auths.models.dto.ApiResponse;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/public/products")
 public class PublicProductController {
 
     @Autowired
@@ -26,9 +26,29 @@ public class PublicProductController {
 
     @GetMapping
     public ResponseEntity<?> getActiveProducts(@RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "12") int size) {
+                                             @RequestParam(defaultValue = "12") int size,
+                                             @RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) ProductCategory category) {
         try {
-            Page<Product> products = productService.getActiveProducts(page, size);
+            Page<Product> products;
+            
+            // Handle search with keyword
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                if (category != null) {
+                    // Search with both keyword and category
+                    products = productService.searchProductsInCategory(keyword.trim(), category, page, size);
+                } else {
+                    // Search with keyword only
+                    products = productService.searchProducts(keyword.trim(), page, size);
+                }
+            } else if (category != null) {
+                // Filter by category only
+                products = productService.getProductsByCategory(category, page, size);
+            } else {
+                // Get all active products
+                products = productService.getActiveProducts(page, size);
+            }
+            
             return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", products));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
